@@ -105,6 +105,19 @@ def create_serverless_app():
                 'environment': 'serverless'
             }
         
+        # Handle OPTIONS preflight requests
+        @app.before_request
+        def handle_preflight():
+            from flask import request
+            if request.method == "OPTIONS":
+                from flask import make_response
+                response = make_response()
+                response.headers.add("Access-Control-Allow-Origin", "*")
+                response.headers.add('Access-Control-Allow-Headers', "*")
+                response.headers.add('Access-Control-Allow-Methods', "*")
+                response.headers.add('Access-Control-Allow-Credentials', "true")
+                return response
+        
         logger.info("Serverless Flask app created successfully")
         return app
         
