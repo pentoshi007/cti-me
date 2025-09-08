@@ -84,6 +84,14 @@ def create_serverless_app():
         logger.info("Initializing database connection...")
         MongoDB.initialize(app)
         
+        # Ensure a default admin exists on startup (for first-run login)
+        try:
+            from auth.models import User
+            logger.info("Creating default admin user if none exists...")
+            User.create_default_admin()
+        except Exception as e:
+            logger.error(f"Error creating default admin user: {e}")
+        
         # Register blueprints
         logger.info("Registering API blueprints...")
         app.register_blueprint(auth_bp, url_prefix='/api/auth')
