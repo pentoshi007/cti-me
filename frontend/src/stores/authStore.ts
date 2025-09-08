@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
-import { apiClient } from "../lib/api.ts";
+import { apiClient } from "../lib/api";
 
 export interface User {
   id: string;
