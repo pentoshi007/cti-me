@@ -77,9 +77,22 @@ class VirusTotalClient:
                     data = response.json()
                     return data
                 elif response.status_code == 404:
-                    # Not found in VirusTotal database
+                    # Not found in VirusTotal database - return a proper structure
                     logger.info(f"Resource not found in VirusTotal: {endpoint}")
-                    return {'data': {'attributes': {'last_analysis_stats': {'malicious': 0, 'suspicious': 0, 'harmless': 0, 'undetected': 0}}}}
+                    return {
+                        'data': {
+                            'attributes': {
+                                'last_analysis_stats': {
+                                    'malicious': 0, 
+                                    'suspicious': 0, 
+                                    'harmless': 0, 
+                                    'undetected': 0
+                                },
+                                'reputation': 0,
+                                'categories': {}
+                            }
+                        }
+                    }
                 elif response.status_code == 429:
                     # Rate limit exceeded
                     logger.warning("VirusTotal rate limit exceeded")
@@ -125,7 +138,11 @@ class VirusTotalClient:
                 'positives': 0,
                 'total': 0,
                 'categories': [],
-                'permalink': f"https://www.virustotal.com/gui/ip-address/{ip}"
+                'country': None,
+                'asn': None,
+                'as_owner': None,
+                'permalink': f"https://www.virustotal.com/gui/ip-address/{ip}",
+                'last_analysis_stats': {'malicious': 0, 'suspicious': 0, 'harmless': 0, 'undetected': 0}
             }
         except Exception as e:
             logger.error(f"VirusTotal IP lookup failed for {ip}: {e}")

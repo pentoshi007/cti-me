@@ -437,14 +437,75 @@ const IOCDetailPage = () => {
                       <div className="text-white/60 text-sm">Malware Detection</div>
                     </div>
                   </div>
-                  {ioc.vt && Object.keys(ioc.vt).length > 0 ? (
-                    <div className="space-y-2">
-                      {Object.entries(ioc.vt).map(([key, value]) => (
-                        <div key={key} className="flex justify-between text-sm">
-                          <span className="text-white/70 capitalize">{key.replace('_', ' ')}:</span>
-                          <span className="text-white font-mono">{String(value)}</span>
+                  {ioc.vt && typeof ioc.vt === 'object' && (ioc.vt.positives !== undefined || ioc.vt.last_fetched_at) ? (
+                    <div className="space-y-3">
+                      {/* Detection Summary */}
+                      <div className="flex justify-between items-center">
+                        <span className="text-white/70">Detection Ratio:</span>
+                        <span className={`text-sm font-semibold ${
+                          ioc.vt.positives > 0 ? 'text-red-400' : 'text-green-400'
+                        }`}>
+                          {ioc.vt.positives || 0}/{ioc.vt.total || 0}
+                        </span>
+                      </div>
+
+                      {/* Reputation Score */}
+                      {ioc.vt.reputation !== undefined && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-white/70">Reputation:</span>
+                          <span className={`text-sm font-semibold ${
+                            ioc.vt.reputation < -10 ? 'text-red-400' : 
+                            ioc.vt.reputation < 0 ? 'text-orange-400' : 'text-green-400'
+                          }`}>
+                            {ioc.vt.reputation}
+                          </span>
                         </div>
-                      ))}
+                      )}
+
+                      {/* Country */}
+                      {ioc.vt.country && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-white/70">Country:</span>
+                          <span className="text-white text-sm">{ioc.vt.country}</span>
+                        </div>
+                      )}
+
+                      {/* ASN */}
+                      {ioc.vt.asn && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-white/70">ASN:</span>
+                          <span className="text-white text-sm">{ioc.vt.asn}</span>
+                        </div>
+                      )}
+
+                      {/* Last Analysis */}
+                      <div className="flex justify-between items-center">
+                        <span className="text-white/70">Last Analysis:</span>
+                        <span className="text-white/60 text-sm">
+                          {ioc.vt.last_fetched_at ? new Date(ioc.vt.last_fetched_at).toLocaleString() : 'N/A'}
+                        </span>
+                      </div>
+
+                      {/* VirusTotal Link */}
+                      {ioc.vt.permalink && (
+                        <div className="pt-2">
+                          <a 
+                            href={ioc.vt.permalink} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-blue-400 hover:text-blue-300 text-sm underline"
+                          >
+                            View on VirusTotal →
+                          </a>
+                        </div>
+                      )}
+
+                      {/* Error Message */}
+                      {ioc.vt.error && (
+                        <div className="text-red-400 text-sm">
+                          Error: {ioc.vt.error}
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <p className="text-white/60 text-sm">No VirusTotal data available</p>
@@ -462,17 +523,84 @@ const IOCDetailPage = () => {
                       <div className="text-white/60 text-sm">Abuse Reports</div>
                     </div>
                   </div>
-                  {ioc.abuseipdb && Object.keys(ioc.abuseipdb).length > 0 ? (
-            <div className="space-y-2">
-                      {Object.entries(ioc.abuseipdb).map(([key, value]) => (
-                        <div key={key} className="flex justify-between text-sm">
-                          <span className="text-white/70 capitalize">{key.replace('_', ' ')}:</span>
-                          <span className="text-white font-mono">{String(value)}</span>
+                  {ioc.abuseipdb && typeof ioc.abuseipdb === 'object' && (ioc.abuseipdb.abuse_confidence !== undefined || ioc.abuseipdb.last_fetched_at) ? (
+                    <div className="space-y-3">
+                      {/* Abuse Confidence */}
+                      <div className="flex justify-between items-center">
+                        <span className="text-white/70">Abuse Confidence:</span>
+                        <span className={`text-sm font-semibold ${
+                          ioc.abuseipdb.abuse_confidence >= 75 ? 'text-red-400' :
+                          ioc.abuseipdb.abuse_confidence >= 50 ? 'text-orange-400' :
+                          ioc.abuseipdb.abuse_confidence >= 25 ? 'text-yellow-400' :
+                          'text-green-400'
+                        }`}>
+                          {ioc.abuseipdb.abuse_confidence || 0}%
+                        </span>
+                      </div>
+
+                      {/* Total Reports */}
+                      <div className="flex justify-between items-center">
+                        <span className="text-white/70">Total Reports:</span>
+                        <span className="text-white text-sm">{ioc.abuseipdb.total_reports || 0}</span>
+                      </div>
+
+                      {/* Country */}
+                      {ioc.abuseipdb.country_name && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-white/70">Country:</span>
+                          <span className="text-white text-sm">
+                            {ioc.abuseipdb.country_name} ({ioc.abuseipdb.country_code})
+                          </span>
                         </div>
-                      ))}
+                      )}
+
+                      {/* ISP */}
+                      {ioc.abuseipdb.isp && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-white/70">ISP:</span>
+                          <span className="text-white text-sm">{ioc.abuseipdb.isp}</span>
+                        </div>
+                      )}
+
+                      {/* Usage Type */}
+                      {ioc.abuseipdb.usage_type && (
+                        <div className="flex justify-between items-center">
+                          <span className="text-white/70">Usage Type:</span>
+                          <span className="text-white text-sm">{ioc.abuseipdb.usage_type}</span>
+                        </div>
+                      )}
+
+                      {/* Is Whitelisted */}
+                      <div className="flex justify-between items-center">
+                        <span className="text-white/70">Whitelisted:</span>
+                        <span className={`text-sm font-semibold ${
+                          ioc.abuseipdb.is_whitelisted ? 'text-green-400' : 'text-white/60'
+                        }`}>
+                          {ioc.abuseipdb.is_whitelisted ? 'Yes' : 'No'}
+                        </span>
+                      </div>
+
+                      {/* Last Analysis */}
+                      <div className="flex justify-between items-center">
+                        <span className="text-white/70">Last Checked:</span>
+                        <span className="text-white/60 text-sm">
+                          {ioc.abuseipdb.last_fetched_at ? new Date(ioc.abuseipdb.last_fetched_at).toLocaleString() : 'N/A'}
+                        </span>
+                      </div>
+
+                      {/* Error Message */}
+                      {ioc.abuseipdb.error && (
+                        <div className="text-red-400 text-sm">
+                          Error: {ioc.abuseipdb.error}
+                        </div>
+                      )}
                     </div>
                   ) : (
-                    <p className="text-white/60 text-sm">No AbuseIPDB data available</p>
+                    ioc.type === 'ip' ? (
+                      <p className="text-white/60 text-sm">No AbuseIPDB data available</p>
+                    ) : (
+                      <p className="text-white/60 text-sm">AbuseIPDB only available for IP addresses</p>
+                    )
                   )}
                 </div>
               </div>

@@ -730,41 +730,41 @@ const IOCsPage = () => {
                     {/* Threat Intelligence Context */}
                     <div className="mb-3 sm:mb-4 space-y-1 sm:space-y-2">
                       {/* VirusTotal Context */}
-                      {ioc.vt && (
+                      {ioc.vt && typeof ioc.vt === 'object' && (ioc.vt.positives !== undefined || ioc.vt.last_fetched_at) && (
                         <div className="flex items-center justify-between p-1.5 sm:p-2 bg-white/5 rounded-lg border border-white/10">
                           <div className="flex items-center space-x-1 sm:space-x-2 min-w-0 flex-1">
                             <ShieldCheckIcon className="w-3 h-3 sm:w-4 sm:h-4 text-blue-400 flex-shrink-0" />
                             <span className="text-white/70 text-xs">VT:</span>
                             <span className={clsx(
                               'text-xs font-medium truncate',
-                              ioc.vt.positives >= 10 ? 'text-red-400' :
-                              ioc.vt.positives >= 5 ? 'text-orange-400' :
-                              ioc.vt.positives >= 1 ? 'text-yellow-400' :
+                              (ioc.vt.positives || 0) >= 10 ? 'text-red-400' :
+                              (ioc.vt.positives || 0) >= 5 ? 'text-orange-400' :
+                              (ioc.vt.positives || 0) >= 1 ? 'text-yellow-400' :
                               'text-green-400'
                             )}>
-                              {ioc.vt.positives}/{ioc.vt.total}
+                              {ioc.vt.positives || 0}/{ioc.vt.total || 0}
                             </span>
                           </div>
                           <div className="text-white/60 text-xs flex-shrink-0">
-                            Rep: {ioc.vt.reputation || 'N/A'}
+                            Rep: {ioc.vt.reputation !== undefined ? ioc.vt.reputation : 'N/A'}
                           </div>
                         </div>
                       )}
                       
                       {/* AbuseIPDB Context */}
-                      {ioc.abuseipdb && Object.keys(ioc.abuseipdb).length > 0 && (
+                      {ioc.abuseipdb && typeof ioc.abuseipdb === 'object' && (ioc.abuseipdb.abuse_confidence !== undefined || ioc.abuseipdb.last_fetched_at) && (
                         <div className="flex items-center justify-between p-1.5 sm:p-2 bg-white/5 rounded-lg border border-white/10">
                           <div className="flex items-center space-x-1 sm:space-x-2 min-w-0 flex-1">
                             <ExclamationTriangleIcon className="w-3 h-3 sm:w-4 sm:h-4 text-orange-400 flex-shrink-0" />
                             <span className="text-white/70 text-xs">Abuse:</span>
                             <span className={clsx(
                               'text-xs font-medium truncate',
-                              ioc.abuseipdb.abuse_confidence >= 75 ? 'text-red-400' :
-                              ioc.abuseipdb.abuse_confidence >= 50 ? 'text-orange-400' :
-                              ioc.abuseipdb.abuse_confidence >= 25 ? 'text-yellow-400' :
+                              (ioc.abuseipdb.abuse_confidence || 0) >= 75 ? 'text-red-400' :
+                              (ioc.abuseipdb.abuse_confidence || 0) >= 50 ? 'text-orange-400' :
+                              (ioc.abuseipdb.abuse_confidence || 0) >= 25 ? 'text-yellow-400' :
                               'text-green-400'
                             )}>
-                              {ioc.abuseipdb.abuse_confidence}%
+                              {ioc.abuseipdb.abuse_confidence || 0}%
                             </span>
                           </div>
                           <div className="text-white/60 text-xs flex-shrink-0">

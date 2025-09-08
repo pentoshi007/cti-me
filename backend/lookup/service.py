@@ -135,39 +135,73 @@ class LookupService:
         try:
             logger.info(f"Starting VirusTotal enrichment for {ioc.type}:{ioc.value}")
             vt_data = await self.vt_client.lookup_ioc(ioc.type, ioc.value)
-            if vt_data:
+            if vt_data and isinstance(vt_data, dict) and len(vt_data) > 1:  # More than just timestamp
                 ioc.vt = vt_data
                 logger.info(f"VirusTotal enrichment completed for {ioc.type}:{ioc.value} - Positives: {vt_data.get('positives', 0)}/{vt_data.get('total', 0)}")
             else:
                 logger.warning(f"No VirusTotal data returned for {ioc.type}:{ioc.value}")
+                # Set empty data to prevent frontend issues
+                ioc.vt = {
+                    'last_fetched_at': datetime.utcnow().isoformat(),
+                    'positives': 0,
+                    'total': 0,
+                    'permalink': f"https://www.virustotal.com/gui/search/{ioc.value}"
+                }
         except Exception as e:
             logger.error(f"VirusTotal enrichment failed for {ioc.type}:{ioc.value}: {e}")
+            # Set empty data with error info
+            ioc.vt = {
+                'last_fetched_at': datetime.utcnow().isoformat(),
+                'positives': 0,
+                'total': 0,
+                'error': str(e),
+                'permalink': f"https://www.virustotal.com/gui/search/{ioc.value}"
+            }
     
     async def _enrich_with_abuseipdb(self, ioc: IOC):
         """Enrich IOC with AbuseIPDB data"""
         try:
             logger.info(f"Starting AbuseIPDB enrichment for {ioc.type}:{ioc.value}")
             abuseipdb_data = await self.abuseipdb_client.lookup_ioc(ioc.type, ioc.value)
-            if abuseipdb_data:
+            if abuseipdb_data and isinstance(abuseipdb_data, dict):
                 # Map the response to match the expected structure
                 mapped_data = {
                     'abuse_confidence': abuseipdb_data.get('abuseConfidenceScore', 0),
                     'country_code': abuseipdb_data.get('countryCode'),
+                    'country_name': abuseipdb_data.get('countryName'),
                     'usage_type': abuseipdb_data.get('usageType'),
                     'isp': abuseipdb_data.get('isp'),
                     'domain': abuseipdb_data.get('domain'),
                     'total_reports': abuseipdb_data.get('reports', 0),
                     'num_distinct_users': abuseipdb_data.get('numDistinctUsers', 0),
                     'is_whitelisted': abuseipdb_data.get('isWhitelisted', False),
+                    'is_public': abuseipdb_data.get('isPublic', False),
                     'last_reported_at': abuseipdb_data.get('lastReportedAt'),
-                    'last_fetched_at': abuseipdb_data.get('last_fetched_at')
+                    'last_fetched_at': abuseipdb_data.get('last_fetched_at', datetime.utcnow().isoformat())
                 }
                 ioc.abuseipdb = mapped_data
                 logger.info(f"AbuseIPDB enrichment completed for {ioc.type}:{ioc.value} - Confidence: {mapped_data['abuse_confidence']}%")
             else:
                 logger.warning(f"No AbuseIPDB data returned for {ioc.type}:{ioc.value}")
+                # Set empty data to prevent frontend issues
+                ioc.abuseipdb = {
+                    'abuse_confidence': 0,
+                    'total_reports': 0,
+                    'num_distinct_users': 0,
+                    'is_whitelisted': False,
+                    'last_fetched_at': datetime.utcnow().isoformat()
+                }
         except Exception as e:
             logger.error(f"AbuseIPDB enrichment failed for {ioc.type}:{ioc.value}: {e}")
+            # Set empty data with error info
+            ioc.abuseipdb = {
+                'abuse_confidence': 0,
+                'total_reports': 0,
+                'num_distinct_users': 0,
+                'is_whitelisted': False,
+                'error': str(e),
+                'last_fetched_at': datetime.utcnow().isoformat()
+            }
     
     def record_enrichment_run(self, stats: Dict, started_at: datetime = None, error: str = None) -> str:
         """Record enrichment run statistics"""

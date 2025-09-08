@@ -7,6 +7,7 @@
 ## 🌟 Features
 
 ### 🎯 Core Functionality
+
 - **IOC Management**: Create, update, and organize indicators of compromise
 - **Real-time Feed Ingestion**: Automated URLHaus feed integration
 - **Threat Intelligence Enrichment**: VirusTotal and AbuseIPDB integration
@@ -15,18 +16,21 @@
 - **Export Capabilities**: Multiple export formats (JSON, CSV, STIX)
 
 ### 🔒 Security & Authentication
+
 - **Role-based Access Control**: Admin, Analyst, and Viewer roles
 - **JWT Authentication**: Secure token-based authentication
 - **Permission Management**: Granular permission system
 - **Session Management**: Automatic token refresh
 
 ### 📊 Analytics & Monitoring
+
 - **System Statistics**: Real-time dashboard metrics
 - **Activity Monitoring**: Track ingestion runs and enrichment operations
 - **Performance Metrics**: API usage and rate limiting
 - **Administrative Tools**: User management and system health
 
 ### 🎨 Modern UI/UX
+
 - **Responsive Design**: Mobile-first approach
 - **Dark/Light Theme**: Adaptive theming
 - **Real-time Updates**: Live data refresh
@@ -35,6 +39,7 @@
 ## 🏗️ Architecture
 
 ### Backend (Python Flask)
+
 ```
 backend/
 ├── auth/           # Authentication & authorization
@@ -48,6 +53,7 @@ backend/
 ```
 
 ### Frontend (React TypeScript)
+
 ```
 frontend/src/
 ├── components/     # Reusable UI components
@@ -60,6 +66,7 @@ frontend/src/
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - **Python 3.11+**
 - **Node.js 18+**
 - **MongoDB** (local or cloud)
@@ -70,50 +77,56 @@ frontend/src/
 ### Local Development
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/pentoshi007/cti-me.git
    cd cti-me
    ```
 
 2. **Backend Setup**
+
    ```bash
    cd backend
-   
+
    # Create virtual environment (included in repo)
    source venv/bin/activate  # On Windows: venv\\Scripts\\activate
-   
+
    # Install dependencies
    pip install -r requirements.txt
-   
+
    # Configure environment
    cp .env.example .env
    # Edit .env with your configuration
    ```
 
 3. **Frontend Setup**
+
    ```bash
    cd frontend
-   
+
    # Install dependencies
    npm install
-   
+
    # Configure environment
    cp .env.example .env.local
    # Edit .env.local with your configuration
    ```
 
 4. **Start Development Servers**
+
    ```bash
    # From project root
    ./start.sh
    ```
 
    This will start:
+
    - **Backend**: http://localhost:8080
    - **Frontend**: http://localhost:3000
    - **API Docs**: http://localhost:8080/docs/
 
 ### Default Credentials
+
 - **Username**: `admin`
 - **Password**: `admin123`
 
@@ -122,6 +135,7 @@ frontend/src/
 ### Vercel Deployment (Recommended)
 
 #### Backend Deployment
+
 1. **Create new Vercel project** for backend
 2. **Set environment variables**:
    ```
@@ -133,6 +147,7 @@ frontend/src/
 3. **Deploy** from `backend/` directory
 
 #### Frontend Deployment
+
 1. **Create new Vercel project** for frontend
 2. **Set environment variables**:
    ```
@@ -141,13 +156,16 @@ frontend/src/
 3. **Deploy** from `frontend/` directory
 
 ### Docker Deployment
+
 ```bash
 # Build and run with Docker Compose
 docker-compose up --build
 ```
 
 ### Railway/Heroku Deployment
+
 Configuration files included:
+
 - `backend/Procfile`
 - `backend/railway.toml`
 - `backend/runtime.txt`
@@ -157,6 +175,7 @@ Configuration files included:
 ### Environment Variables
 
 #### Backend (.env)
+
 ```env
 # MongoDB
 MONGO_URI=mongodb://localhost:27017/
@@ -176,6 +195,7 @@ CORS_ORIGINS=http://localhost:3000,https://your-frontend-domain.com
 ```
 
 #### Frontend (.env.local)
+
 ```env
 VITE_API_URL=http://localhost:8080
 ```
@@ -185,6 +205,7 @@ VITE_API_URL=http://localhost:8080
 Interactive API documentation available at: `http://localhost:8080/docs/`
 
 ### Key Endpoints
+
 - **Authentication**: `/api/auth/*`
 - **IOCs**: `/api/iocs/*`
 - **Lookups**: `/api/lookup/*`
@@ -194,25 +215,28 @@ Interactive API documentation available at: `http://localhost:8080/docs/`
 ## 🔧 Development
 
 ### Code Structure
+
 - **Backend**: Python Flask with Flask-RESTX for API documentation
 - **Frontend**: React with TypeScript, Tailwind CSS, Zustand for state management
 - **Database**: MongoDB with PyMongo
 - **Authentication**: JWT with Flask-JWT-Extended
 
 ### Recent Improvements
+
 - ✅ Fixed JWT authentication errors
-- ✅ Improved URLHaus ingestion with better asyncio handling  
+- ✅ Improved URLHaus ingestion with better asyncio handling
 - ✅ Enhanced VirusTotal rate limiting
 - ✅ Better error handling throughout the application
 - ✅ Frontend token refresh improvements
 
 ### Testing
+
 ```bash
 # Backend tests
 cd backend
 python -m pytest
 
-# Frontend tests  
+# Frontend tests
 cd frontend
 npm test
 ```
