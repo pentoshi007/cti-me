@@ -105,6 +105,26 @@ def create_serverless_app():
                 'environment': 'serverless'
             }
         
+        # Test endpoint for CORS verification (no auth required)
+        @app.route('/api/test')
+        def test_cors():
+            from datetime import datetime
+            return {
+                'message': 'CORS test successful',
+                'timestamp': str(datetime.utcnow()),
+                'method': 'GET'
+            }
+        
+        # Test endpoint for POST CORS verification (no auth required)
+        @app.route('/api/test', methods=['POST'])
+        def test_cors_post():
+            from datetime import datetime
+            return {
+                'message': 'CORS POST test successful',
+                'timestamp': str(datetime.utcnow()),
+                'method': 'POST'
+            }
+        
         # Handle OPTIONS preflight requests
         @app.before_request
         def handle_preflight():
