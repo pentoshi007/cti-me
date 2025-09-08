@@ -125,13 +125,18 @@ def create_serverless_app():
         logger.error(f"Failed to create serverless app: {e}")
         raise
 
+# Global variables for error handling
+init_error_msg = None
+error_traceback = None
+
 # Create the Flask application instance
 try:
     from datetime import datetime
     app = create_serverless_app()
     logger.info("CTI Dashboard serverless function initialized successfully")
-except Exception as init_error:
-    logger.error(f"Failed to initialize serverless function: {init_error}")
+except Exception as e:
+    init_error_msg = str(e)
+    logger.error(f"Failed to initialize serverless function: {e}")
     import traceback
     error_traceback = traceback.format_exc()
     logger.error(f"Full traceback: {error_traceback}")
@@ -145,7 +150,7 @@ except Exception as init_error:
     def error():
         return jsonify({
             "error": "Failed to initialize CTI Dashboard",
-            "message": str(init_error),
+            "message": init_error_msg or "Unknown initialization error",
             "status": "error",
             "environment": "serverless"
         }), 500
@@ -153,8 +158,8 @@ except Exception as init_error:
     @app.route('/debug')
     def debug():
         return jsonify({
-            "error": str(init_error),
-            "traceback": error_traceback,
+            "error": init_error_msg or "Unknown initialization error",
+            "traceback": error_traceback or "No traceback available",
             "environment_vars": {
                 "FLASK_ENV": os.environ.get("FLASK_ENV", "not set"),
                 "MONGO_URI": "***set***" if os.environ.get("MONGO_URI") else "not set",
