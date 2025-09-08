@@ -7,8 +7,8 @@ from flask_jwt_extended import jwt_required, get_current_user
 from bson import ObjectId
 from datetime import datetime
 
-from .models import Tag
-from ..auth.models import User
+from tags.models import Tag
+from auth.models import User
 
 logger = logging.getLogger(__name__)
 

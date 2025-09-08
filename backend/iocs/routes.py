@@ -9,8 +9,9 @@ from datetime import datetime
 from typing import Optional, Dict, Any
 import re
 
-from .models import IOC, Tag
-from ..auth.models import User
+from iocs.models import IOC
+from tags.models import Tag
+from auth.models import User
 
 logger = logging.getLogger(__name__)
 

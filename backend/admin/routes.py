@@ -12,8 +12,8 @@ from auth.models import User
 from lookup.service import LookupService
 from ingestion.urlhaus_fetcher import URLHausFetcher
 
-        logger = logging.getLogger(__name__)
-        
+logger = logging.getLogger(__name__)
+
 admin_bp = Blueprint('admin', __name__)
 
 
@@ -31,7 +31,7 @@ def require_admin():
 
 
 @admin_bp.route('/system/stats', methods=['GET'])
-    @jwt_required()
+@jwt_required()
 @require_admin()
 def get_system_stats():
     """Get system statistics and health information"""
@@ -58,14 +58,14 @@ def get_system_stats():
         # IOC breakdown by type
         ioc_types_pipeline = [
             {'$group': {'_id': '$type', 'count': {'$sum': 1}}},
-            {'$sort': {'count': -1'}}
+            {'$sort': {'count': -1}}
         ]
         ioc_types = list(indicators.aggregate(ioc_types_pipeline))
 
         # User roles breakdown
         user_roles_pipeline = [
             {'$group': {'_id': '$role', 'count': {'$sum': 1}}},
-            {'$sort': {'count': -1'}}
+            {'$sort': {'count': -1}}
         ]
         user_roles = list(users.aggregate(user_roles_pipeline))
 
@@ -86,21 +86,21 @@ def get_system_stats():
             },
             'generated_at': now.isoformat()
         })
-            
-        except Exception as e:
+
+    except Exception as e:
         logger.error(f"Error retrieving system stats: {e}")
         return jsonify({'error': 'Failed to retrieve system statistics'}), 500
 
 
 @admin_bp.route('/ingest/runs', methods=['GET'])
-    @jwt_required()
+@jwt_required()
 @require_admin()
 def get_ingest_runs():
     """Get recent ingestion run statistics"""
     try:
         from database import MongoDB
-            enrichment_runs = MongoDB.get_collection('enrichment_runs')
-            
+        enrichment_runs = MongoDB.get_collection('enrichment_runs')
+
         # Get recent runs (last 50)
         runs = list(enrichment_runs.find().sort('finished_at', -1).limit(50))
 
@@ -112,20 +112,20 @@ def get_ingest_runs():
             'runs': runs,
             'total_runs': len(runs)
         })
-            
-        except Exception as e:
+
+    except Exception as e:
         logger.error(f"Error retrieving ingest runs: {e}")
         return jsonify({'error': 'Failed to retrieve ingest runs'}), 500
 
 
 @admin_bp.route('/all-runs', methods=['GET'])
-    @jwt_required()
+@jwt_required()
 @require_admin()
 def get_all_runs():
     """Get all run statistics (ingestion and enrichment)"""
     try:
         from database import MongoDB
-            enrichment_runs = MongoDB.get_collection('enrichment_runs')
+        enrichment_runs = MongoDB.get_collection('enrichment_runs')
 
         # Get all runs
         all_runs = list(enrichment_runs.find().sort('finished_at', -1))
@@ -140,7 +140,7 @@ def get_all_runs():
         failed_runs = len([r for r in all_runs if r.get('status') == 'error'])
 
         return jsonify({
-                'runs': all_runs,
+            'runs': all_runs,
             'summary': {
                 'total_runs': total_runs,
                 'successful_runs': successful_runs,
@@ -148,14 +148,14 @@ def get_all_runs():
                 'success_rate': (successful_runs / total_runs * 100) if total_runs > 0 else 0
             }
         })
-            
-        except Exception as e:
+
+    except Exception as e:
         logger.error(f"Error retrieving all runs: {e}")
         return jsonify({'error': 'Failed to retrieve runs'}), 500
 
 
 @admin_bp.route('/ingest/run', methods=['POST'])
-    @jwt_required()
+@jwt_required()
 @require_admin()
 def trigger_ingest():
     """Manually trigger URLHaus ingestion"""
@@ -191,7 +191,7 @@ def trigger_ingest():
 
             finally:
                 loop.close()
-            
+
         except Exception as e:
             logger.error(f"Ingestion failed: {e}")
             return jsonify({
@@ -206,7 +206,7 @@ def trigger_ingest():
 
 
 @admin_bp.route('/enrichment/run', methods=['POST'])
-    @jwt_required()
+@jwt_required()
 @require_admin()
 def trigger_enrichment():
     """Manually trigger IOC enrichment"""
@@ -286,7 +286,7 @@ def check_auto_run():
 
 
 @admin_bp.route('/users', methods=['GET'])
-    @jwt_required()
+@jwt_required()
 @require_admin()
 def get_users():
     """Get all users (admin only)"""
@@ -312,10 +312,10 @@ def get_users():
 
 
 @admin_bp.route('/users', methods=['POST'])
-    @jwt_required()
+@jwt_required()
 @require_admin()
 def create_user():
-        """Create a new user (admin only)"""
+    """Create a new user (admin only)"""
     try:
         data = request.get_json()
         if not data:
@@ -325,35 +325,35 @@ def create_user():
         email = data.get('email', '').strip().lower()
         password = data.get('password', '')
         role = data.get('role', 'viewer').lower()
-        
+
         # Validation
         if not username or len(username) < 3 or len(username) > 50:
             return jsonify({'error': 'Username must be 3-50 characters long'}), 400
-        
+
         if not email or '@' not in email:
             return jsonify({'error': 'Valid email address required'}), 400
-        
+
         if not password or len(password) < 8:
             return jsonify({'error': 'Password must be at least 8 characters long'}), 400
-        
+
         if role not in ['admin', 'analyst', 'viewer']:
             role = 'viewer'
-        
+
         # Check if user already exists
         if User.find_by_username(username):
             return jsonify({'error': 'Username already exists'}), 409
-        
+
         if User.find_by_email(email):
             return jsonify({'error': 'Email already registered'}), 409
-        
+
         # Create user
         user = User(
             username=username,
             email=email,
             role=role
         )
-            user.set_password(password)
-            user.save()
+        user.set_password(password)
+        user.save()
 
         logger.info(f"Admin created user: {username} with role: {role}")
 
@@ -362,13 +362,13 @@ def create_user():
             'user': user.to_dict()
         }), 201
 
-        except Exception as e:
+    except Exception as e:
         logger.error(f"Error creating user: {e}")
         return jsonify({'error': 'Failed to create user'}), 500
 
 
 @admin_bp.route('/users/<user_id>', methods=['PATCH'])
-    @jwt_required()
+@jwt_required()
 @require_admin()
 def update_user(user_id):
     """Update user information (admin only)"""
@@ -381,7 +381,7 @@ def update_user(user_id):
         user = User.find_by_id(user_id)
         if not user:
             return jsonify({'error': 'User not found'}), 404
-        
+
         data = request.get_json()
         if not data:
             return jsonify({'error': 'No data provided'}), 400
@@ -389,11 +389,11 @@ def update_user(user_id):
         # Update allowed fields
         if 'role' in data and data['role'] in ['admin', 'analyst', 'viewer']:
             user.role = data['role']
-        
+
         if 'is_active' in data:
             user.is_active = bool(data['is_active'])
 
-            user.save()
+        user.save()
 
         logger.info(f"Admin updated user {user_id}: role={user.role}, active={user.is_active}")
 
@@ -402,13 +402,13 @@ def update_user(user_id):
             'user': user.to_dict()
         })
 
-        except Exception as e:
+    except Exception as e:
         logger.error(f"Error updating user {user_id}: {e}")
         return jsonify({'error': 'Failed to update user'}), 500
 
-    
+
 @admin_bp.route('/users/<user_id>', methods=['DELETE'])
-    @jwt_required()
+@jwt_required()
 @require_admin()
 def delete_user(user_id):
     """Delete a user (admin only)"""
@@ -421,7 +421,7 @@ def delete_user(user_id):
         user = User.find_by_id(user_id)
         if not user:
             return jsonify({'error': 'User not found'}), 404
-        
+
         # Prevent deleting self
         current_user = get_current_user()
         if str(user._id) == str(current_user._id):
@@ -435,9 +435,9 @@ def delete_user(user_id):
         if result.deleted_count > 0:
             logger.info(f"Admin deleted user: {user.username}")
             return jsonify({'message': 'User deleted successfully'})
-                else:
+        else:
             return jsonify({'error': 'Failed to delete user'}), 500
-                    
-            except Exception as e:
+
+    except Exception as e:
         logger.error(f"Error deleting user {user_id}: {e}")
         return jsonify({'error': 'Failed to delete user'}), 500

@@ -9,9 +9,9 @@ from bson import ObjectId
 from datetime import datetime
 import nest_asyncio
 
-from .models import Lookup
-from .service import LookupService
-from ..auth.models import User
+from lookup.models import Lookup
+from lookup.service import LookupService
+from auth.models import User
 
 logger = logging.getLogger(__name__)
 

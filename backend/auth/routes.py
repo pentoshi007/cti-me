@@ -24,34 +24,34 @@ def register():
     email = data.get('email', '').strip().lower()
     password = data.get('password', '')
     role = data.get('role', 'viewer').lower()
-    
+        
     # Validation
     if not username or len(username) < 3 or len(username) > 50:
         return jsonify({'error': 'Username must be 3-50 characters long'}), 400
-    
+
     if not email or '@' not in email:
         return jsonify({'error': 'Valid email address required'}), 400
-    
+
     if not password or len(password) < 8:
         return jsonify({'error': 'Password must be at least 8 characters long'}), 400
-    
+
     # Validate role
     if role not in ['admin', 'analyst', 'viewer']:
         role = 'viewer'  # Default to viewer for invalid roles
-    
+
     # Only admins can create admin users
     if role == 'admin':
         current_user = get_current_user()
         if not current_user or not current_user.has_permission('admin'):
             role = 'viewer'  # Downgrade to viewer if not admin
-    
+
     # Check if user already exists
     if User.find_by_username(username):
         return jsonify({'error': 'Username already exists'}), 409
-    
+
     if User.find_by_email(email):
         return jsonify({'error': 'Email already registered'}), 409
-    
+
     # Create new user
     try:
         user = User(
@@ -61,21 +61,21 @@ def register():
         )
         user.set_password(password)
         user.save()
-        
+
         # Update last login
         user.last_login = datetime.utcnow()
         user.save()
-        
+
         # Create tokens
         access_token = create_access_token(identity=str(user._id))
         refresh_token = create_refresh_token(identity=str(user._id))
-        
+
         return jsonify({
             'access_token': access_token,
             'refresh_token': refresh_token,
             'user': user.to_dict()
         })
-        
+
     except Exception as e:
         return jsonify({'error': f'User registration failed: {str(e)}'}), 500
 
