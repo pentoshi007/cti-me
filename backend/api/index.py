@@ -82,7 +82,7 @@ def create_serverless_app():
         
         # Initialize database
         logger.info("Initializing database connection...")
-        MongoDB.initialize()
+        MongoDB.initialize(app)
         
         # Register blueprints
         logger.info("Registering API blueprints...")
