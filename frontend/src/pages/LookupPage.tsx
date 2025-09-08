@@ -19,7 +19,7 @@ import {
   CalendarIcon,
   ArrowTopRightOnSquareIcon
 } from '@heroicons/react/24/outline'
-import { api } from '../lib/api'
+import { api } from '../api'
 import toast from 'react-hot-toast'
 import clsx from 'clsx'
 
