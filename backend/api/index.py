@@ -58,11 +58,17 @@ def create_serverless_app():
         app.config.from_object(Config)
         
         logger.info("Initializing CORS...")
-        # Initialize CORS with credentials support - must specify exact origins, not "*"
+        # Initialize CORS with credentials support - allow Vercel subdomains and localhost
+        from flask_cors import cross_origin
+        
+        def check_origin(origin):
+            """Check if origin is allowed"""
+            allowed_origins = ["http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:3000"]
+            is_vercel = origin and origin.endswith('.vercel.app') and origin.startswith('https://')
+            return origin in allowed_origins or is_vercel
+        
         CORS(app, 
-             resources={r"/api/*": {
-                 "origins": ["https://cti-me.vercel.app", "http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:3000"]
-             }},
+             resources={r"/api/*": {"origins": check_origin}},
              supports_credentials=True,
              allow_headers=["Content-Type", "Authorization", "Accept", "X-Requested-With"],
              methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
@@ -135,12 +141,16 @@ def create_serverless_app():
                 from flask import make_response
                 response = make_response()
                 origin = request.headers.get('Origin')
-                allowed_origins = ["https://cti-me.vercel.app", "http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:3000"]
-                if origin in allowed_origins:
+                
+                # Allow localhost for development and any vercel.app subdomain for production
+                allowed_origins = ["http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:3000"]
+                is_vercel = origin and origin.endswith('.vercel.app') and origin.startswith('https://')
+                
+                if origin in allowed_origins or is_vercel:
                     response.headers.add("Access-Control-Allow-Origin", origin)
-                response.headers.add('Access-Control-Allow-Headers', "*")
-                response.headers.add('Access-Control-Allow-Methods', "*")
-                response.headers.add('Access-Control-Allow-Credentials', "true")
+                    response.headers.add('Access-Control-Allow-Headers', "*")
+                    response.headers.add('Access-Control-Allow-Methods', "*")
+                    response.headers.add('Access-Control-Allow-Credentials', "true")
                 return response
         
         logger.info("Serverless Flask app created successfully")
