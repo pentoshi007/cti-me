@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # Backend service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "5001:5001"
+    environment:
+      - FLASK_ENV=production
+      - FLASK_SECRET_KEY=${FLASK_SECRET_KEY:-change_me_in_production}
+      - MONGO_URI=${MONGO_URI}
+      - MONGO_DB=${MONGO_DB:-cti}
+      - VT_API_KEY=${VT_API_KEY}
+      - ABUSEIPDB_API_KEY=${ABUSEIPDB_API_KEY}
+      - JWT_ACCESS_TTL=${JWT_ACCESS_TTL:-900}
+      - JWT_REFRESH_TTL=${JWT_REFRESH_TTL:-2592000}
+      - SCHEDULER_TIMEZONE=${SCHEDULER_TIMEZONE:-UTC}
+      - EXPORT_DIR=/app/exports
+      - RATE_LIMIT_LOOKUP_PER_MIN=${RATE_LIMIT_LOOKUP_PER_MIN:-60}
+    volumes:
+      - ./exports:/app/exports
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    environment:
+      - VITE_API_URL=http://localhost:5001
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  exports:
