@@ -58,14 +58,13 @@ def create_serverless_app():
         app.config.from_object(Config)
         
         logger.info("Initializing CORS...")
-        # Initialize CORS
-        CORS(app, resources={
-            r"/api/*": {
-                "origins": Config.CORS_ORIGINS,
-                "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-                "allow_headers": ["Content-Type", "Authorization"]
-            }
-        })
+        # Initialize CORS with credentials support
+        CORS(app, 
+             resources={r"/api/*": {"origins": ["*"]}},
+             supports_credentials=True,
+             allow_headers=["Content-Type", "Authorization", "Accept", "X-Requested-With"],
+             methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
+        )
         
         # Initialize JWT
         logger.info("Initializing JWT...")

@@ -2,8 +2,8 @@ import axios from "axios";
 
 // Create axios instance
 export const apiClient = axios.create({
-  // In dev, rely on Vite proxy (relative URLs). In prod, use VITE_API_URL.
-  baseURL: import.meta.env.DEV ? "" : import.meta.env.VITE_API_URL || "",
+  // In dev, rely on Vite proxy (relative URLs). In prod, use the deployed backend.
+  baseURL: import.meta.env.DEV ? "" : "https://cti-me.vercel.app",
   timeout: 30000,
   withCredentials: true,
 });
