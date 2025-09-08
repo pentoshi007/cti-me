@@ -130,10 +130,11 @@ try:
     from datetime import datetime
     app = create_serverless_app()
     logger.info("CTI Dashboard serverless function initialized successfully")
-except Exception as e:
-    logger.error(f"Failed to initialize serverless function: {e}")
+except Exception as init_error:
+    logger.error(f"Failed to initialize serverless function: {init_error}")
     import traceback
-    logger.error(f"Full traceback: {traceback.format_exc()}")
+    error_traceback = traceback.format_exc()
+    logger.error(f"Full traceback: {error_traceback}")
     
     # Create a minimal error app that shows the actual error
     from flask import Flask, jsonify
@@ -144,7 +145,7 @@ except Exception as e:
     def error():
         return jsonify({
             "error": "Failed to initialize CTI Dashboard",
-            "message": str(e),
+            "message": str(init_error),
             "status": "error",
             "environment": "serverless"
         }), 500
@@ -152,8 +153,8 @@ except Exception as e:
     @app.route('/debug')
     def debug():
         return jsonify({
-            "error": str(e),
-            "traceback": traceback.format_exc(),
+            "error": str(init_error),
+            "traceback": error_traceback,
             "environment_vars": {
                 "FLASK_ENV": os.environ.get("FLASK_ENV", "not set"),
                 "MONGO_URI": "***set***" if os.environ.get("MONGO_URI") else "not set",
