@@ -58,22 +58,9 @@ def create_serverless_app():
         app.config.from_object(Config)
         
         logger.info("Initializing CORS...")
-        # Initialize CORS with credentials support - allow Vercel subdomains and localhost
-        from flask_cors import cross_origin
-        
-        def check_origin(origin):
-            """Check if origin is allowed"""
-            allowed_origins = [
-                "http://localhost:3000", 
-                "http://localhost:3001", 
-                "http://127.0.0.1:3000",
-                "https://cti-web-ten.vercel.app"  # Specific frontend domain
-            ]
-            is_vercel = origin and origin.endswith('.vercel.app') and origin.startswith('https://')
-            return origin in allowed_origins or is_vercel
-        
+        # Simple CORS configuration that should work reliably
         CORS(app, 
-             resources={r"/api/*": {"origins": check_origin}},
+             origins=["https://cti-web-ten.vercel.app", "http://localhost:3000"],
              supports_credentials=True,
              allow_headers=["Content-Type", "Authorization", "Accept", "X-Requested-With"],
              methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
@@ -138,6 +125,21 @@ def create_serverless_app():
                 'method': 'POST'
             }
         
+        # Add CORS headers to all responses as fallback
+        @app.after_request
+        def after_request(response):
+            from flask import request
+            origin = request.headers.get('Origin')
+            allowed_origins = ["https://cti-web-ten.vercel.app", "http://localhost:3000"]
+            
+            if origin in allowed_origins:
+                response.headers.add('Access-Control-Allow-Origin', origin)
+                response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,Accept,X-Requested-With')
+                response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS')
+                response.headers.add('Access-Control-Allow-Credentials', 'true')
+            
+            return response
+        
         # Handle OPTIONS preflight requests
         @app.before_request
         def handle_preflight():
@@ -146,20 +148,12 @@ def create_serverless_app():
                 from flask import make_response
                 response = make_response()
                 origin = request.headers.get('Origin')
+                allowed_origins = ["https://cti-web-ten.vercel.app", "http://localhost:3000"]
                 
-                # Allow localhost for development and any vercel.app subdomain for production
-                allowed_origins = [
-                    "http://localhost:3000", 
-                    "http://localhost:3001", 
-                    "http://127.0.0.1:3000",
-                    "https://cti-web-ten.vercel.app"  # Specific frontend domain
-                ]
-                is_vercel = origin and origin.endswith('.vercel.app') and origin.startswith('https://')
-                
-                if origin in allowed_origins or is_vercel:
+                if origin in allowed_origins:
                     response.headers.add("Access-Control-Allow-Origin", origin)
-                    response.headers.add('Access-Control-Allow-Headers', "*")
-                    response.headers.add('Access-Control-Allow-Methods', "*")
+                    response.headers.add('Access-Control-Allow-Headers', "Content-Type,Authorization,Accept,X-Requested-With")
+                    response.headers.add('Access-Control-Allow-Methods', "GET,POST,PUT,DELETE,PATCH,OPTIONS")
                     response.headers.add('Access-Control-Allow-Credentials', "true")
                 return response
         
