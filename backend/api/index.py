@@ -125,6 +125,25 @@ def create_serverless_app():
                 'method': 'POST'
             }
         
+        # Public endpoints for testing (no auth required)
+        @app.route('/api/public/status')
+        def public_status():
+            from datetime import datetime
+            return {
+                'status': 'public endpoint working',
+                'timestamp': str(datetime.utcnow()),
+                'requires_auth': False
+            }
+        
+        @app.route('/api/public/metrics')
+        def public_metrics():
+            return {
+                'total_iocs': 0,
+                'total_lookups': 0,
+                'total_tags': 0,
+                'message': 'Login required for real data'
+            }
+        
         # Add CORS headers to all responses as fallback
         @app.after_request
         def after_request(response):
