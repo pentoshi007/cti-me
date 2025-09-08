@@ -1,6 +1,7 @@
 """
 URLHaus feed fetcher for threat intelligence ingestion
 """
+import asyncio
 import csv
 import io
 from datetime import datetime
