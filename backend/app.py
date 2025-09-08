@@ -8,7 +8,6 @@ import json
 from datetime import datetime, timedelta
 from flask import Flask
 from flask_cors import CORS
-from flask_restx import Api
 from flask_jwt_extended import JWTManager
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
@@ -18,13 +17,13 @@ import atexit
 
 from config import Config
 from database import MongoDB
-from auth.routes import auth_ns
-from iocs.routes import iocs_ns
-from lookup.routes import lookup_ns
-from tags.routes import tags_ns
-from metrics.routes import metrics_ns
-from exports.routes import exports_ns
-from admin.routes import admin_ns
+from auth.routes import auth_bp
+from iocs.routes import iocs_bp
+from lookup.routes import lookup_bp
+from tags.routes import tags_bp
+from metrics.routes import metrics_bp
+from exports.routes import exports_bp
+from admin.routes import admin_bp
 from ingestion.urlhaus_fetcher import URLHausFetcher
 from auth.models import User
 
@@ -112,36 +111,17 @@ def create_app():
         # Initialize MongoDB
         logger.info("Initializing MongoDB connection...")
         MongoDB.initialize(app)
-        
-        # Initialize API with documentation
-        api = Api(
-            app,
-            version='1.0',
-            title='CTI Dashboard API',
-            description='Cyber Threat Intelligence Dashboard REST API',
-            doc='/docs/',
-            prefix='/api',
-            authorizations={
-                'Bearer': {
-                    'type': 'apiKey',
-                    'in': 'header',
-                    'name': 'Authorization',
-                    'description': 'JWT token in the format: Bearer <token>'
-                }
-            },
-            security='Bearer'
-        )
-        
-        # Register namespaces
-        logger.info("Registering API namespaces...")
-        api.add_namespace(auth_ns)
-        api.add_namespace(iocs_ns)
-        api.add_namespace(lookup_ns)
-        api.add_namespace(tags_ns)
-        api.add_namespace(metrics_ns)
-        api.add_namespace(exports_ns)
-        api.add_namespace(admin_ns)
-        
+
+        # Register blueprints
+        logger.info("Registering API blueprints...")
+        app.register_blueprint(auth_bp, url_prefix='/api/auth')
+        app.register_blueprint(iocs_bp, url_prefix='/api/iocs')
+        app.register_blueprint(lookup_bp, url_prefix='/api/lookup')
+        app.register_blueprint(tags_bp, url_prefix='/api/tags')
+        app.register_blueprint(metrics_bp, url_prefix='/api/metrics')
+        app.register_blueprint(exports_bp, url_prefix='/api/exports')
+        app.register_blueprint(admin_bp, url_prefix='/api/admin')
+
         # Health check endpoint
         @app.route('/api/health')
         def health_check():
