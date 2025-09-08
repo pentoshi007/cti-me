@@ -18,7 +18,6 @@ try:
     logger.info("Testing imports...")
     from flask import Flask, jsonify
     from flask_cors import CORS
-    from flask_restx import Api
     logger.info("Basic Flask imports successful")
     
     from config import Config
@@ -42,14 +41,14 @@ def create_serverless_app():
         from flask_limiter import Limiter
         from flask_limiter.util import get_remote_address
         
-        # Import route namespaces
-        from auth.routes import auth_ns
-        from iocs.routes import iocs_ns
-        from lookup.routes import lookup_ns
-        from tags.routes import tags_ns
-        from metrics.routes import metrics_ns
-        from exports.routes import exports_ns
-        from admin.routes import admin_ns
+        # Import route blueprints
+        from auth.routes import auth_bp
+        from iocs.routes import iocs_bp
+        from lookup.routes import lookup_bp
+        from tags.routes import tags_bp
+        from metrics.routes import metrics_bp
+        from exports.routes import exports_bp
+        from admin.routes import admin_bp
         
         logger.info("All route imports successful")
         
@@ -85,26 +84,15 @@ def create_serverless_app():
         logger.info("Initializing database connection...")
         MongoDB.initialize()
         
-        # Create API instance
-        logger.info("Creating API instance...")
-        api = Api(
-            app,
-            version='1.0',
-            title='CTI Dashboard API',
-            description='Cyber Threat Intelligence Dashboard API',
-            doc='/docs/',
-            prefix='/api'
-        )
-        
-        # Register namespaces
-        logger.info("Registering API namespaces...")
-        api.add_namespace(auth_ns, path='/auth')
-        api.add_namespace(iocs_ns, path='/iocs')
-        api.add_namespace(lookup_ns, path='/lookup')
-        api.add_namespace(tags_ns, path='/tags')
-        api.add_namespace(metrics_ns, path='/metrics')
-        api.add_namespace(exports_ns, path='/exports')
-        api.add_namespace(admin_ns, path='/admin')
+        # Register blueprints
+        logger.info("Registering API blueprints...")
+        app.register_blueprint(auth_bp, url_prefix='/api/auth')
+        app.register_blueprint(iocs_bp, url_prefix='/api/iocs')
+        app.register_blueprint(lookup_bp, url_prefix='/api/lookup')
+        app.register_blueprint(tags_bp, url_prefix='/api/tags')
+        app.register_blueprint(metrics_bp, url_prefix='/api/metrics')
+        app.register_blueprint(exports_bp, url_prefix='/api/exports')
+        app.register_blueprint(admin_bp, url_prefix='/api/admin')
         
         # Health check endpoint
         logger.info("Creating health check endpoints...")

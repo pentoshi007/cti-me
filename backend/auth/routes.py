@@ -2,8 +2,7 @@
 Authentication API routes
 """
 from datetime import datetime, timedelta
-from flask import request
-from flask_restx import Resource, Namespace, fields
+from flask import request, jsonify, Blueprint
 from flask_jwt_extended import (
     create_access_token, create_refresh_token, jwt_required, 
     get_jwt_identity, get_jwt
@@ -12,140 +11,56 @@ from flask_jwt_extended import (
 from auth.models import User
 from utils.decorators import require_permission, get_current_user
 
-auth_ns = Namespace('auth', description='Authentication operations')
+auth_bp = Blueprint('auth', __name__)
 
-# API Models
-login_model = auth_ns.model('Login', {
-    'username': fields.String(required=True, description='Username'),
-    'password': fields.String(required=True, description='Password')
-})
-
-register_model = auth_ns.model('Register', {
-    'username': fields.String(required=True, description='Username (3-50 characters)'),
-    'email': fields.String(required=True, description='Valid email address'),
-    'password': fields.String(required=True, description='Password (minimum 8 characters)'),
-    'role': fields.String(description='User role (admin only)', enum=['admin', 'analyst', 'viewer'])
-})
-
-token_response = auth_ns.model('TokenResponse', {
-    'access_token': fields.String(description='JWT access token'),
-    'refresh_token': fields.String(description='JWT refresh token'),
-    'user': fields.Raw(description='User information')
-})
-
-refresh_model = auth_ns.model('RefreshToken', {
-    'refresh_token': fields.String(required=True, description='Refresh token')
-})
-
-user_model = auth_ns.model('User', {
-    'id': fields.String(description='User ID'),
-    'username': fields.String(description='Username'),
-    'email': fields.String(description='Email'),
-    'role': fields.String(description='User role'),
-    'permissions': fields.List(fields.String, description='User permissions'),
-    'created_at': fields.String(description='Creation timestamp'),
-    'last_login': fields.String(description='Last login timestamp')
-})
-
-password_reset_request_model = auth_ns.model('PasswordResetRequest', {
-    'email': fields.String(required=True, description='Email address for password reset')
-})
-
-password_reset_model = auth_ns.model('PasswordReset', {
-    'email': fields.String(required=True, description='Email address'),
-    'reset_code': fields.String(required=True, description='6-digit reset code'),
-    'new_password': fields.String(required=True, description='New password')
-})
-
-change_password_model = auth_ns.model('ChangePassword', {
-    'current_password': fields.String(required=True, description='Current password'),
-    'new_password': fields.String(required=True, description='New password')
-})
+# No model definitions needed for standard Flask routes
 
 
-@auth_ns.route('/register')
-class Register(Resource):
-    @auth_ns.expect(register_model)
-    @auth_ns.marshal_with(token_response)
-    def post(self):
-        """Register a new user"""
-        data = request.get_json()
-        username = data.get('username', '').strip()
-        email = data.get('email', '').strip().lower()
-        password = data.get('password', '')
-        role = data.get('role', 'viewer').lower()
-        
-        # Validation
-        if not username or len(username) < 3 or len(username) > 50:
-            auth_ns.abort(400, 'Username must be 3-50 characters long')
-        
-        if not email or '@' not in email:
-            auth_ns.abort(400, 'Valid email address required')
-        
-        if not password or len(password) < 8:
-            auth_ns.abort(400, 'Password must be at least 8 characters long')
-        
-        # Validate role
-        if role not in ['admin', 'analyst', 'viewer']:
-            role = 'viewer'  # Default to viewer for invalid roles
-        
-        # Only admins can create admin users
-        if role == 'admin':
-            current_user = get_current_user()
-            if not current_user or not current_user.has_permission('admin'):
-                role = 'viewer'  # Downgrade to viewer if not admin
-        
-        # Check if user already exists
-        if User.find_by_username(username):
-            auth_ns.abort(409, 'Username already exists')
-        
-        if User.find_by_email(email):
-            auth_ns.abort(409, 'Email already registered')
-        
-        # Create new user
-        try:
-            user = User(
-                username=username,
-                email=email,
-                role=role
-            )
-            user.set_password(password)
-            user.save()
-            
-            # Update last login
-            user.last_login = datetime.utcnow()
-            user.save()
-            
-            # Create tokens
-            access_token = create_access_token(identity=str(user._id))
-            refresh_token = create_refresh_token(identity=str(user._id))
-            
-            return {
-                'access_token': access_token,
-                'refresh_token': refresh_token,
-                'user': user.to_dict()
-            }
-            
-        except Exception as e:
-            auth_ns.abort(500, f'User registration failed: {str(e)}')
-
-
-@auth_ns.route('/login')
-class Login(Resource):
-    @auth_ns.expect(login_model)
-    @auth_ns.marshal_with(token_response)
-    def post(self):
-        """Authenticate user and return JWT tokens"""
-        data = request.get_json()
-        username = data.get('username')
-        password = data.get('password')
-        
-        if not username or not password:
-            auth_ns.abort(400, 'Username and password required')
-        
-        user = User.find_by_username(username)
-        if not user or not user.check_password(password):
-            auth_ns.abort(401, 'Invalid credentials')
+@auth_bp.route('/register', methods=['POST'])
+def register():
+    """Register a new user"""
+    data = request.get_json()
+    username = data.get('username', '').strip()
+    email = data.get('email', '').strip().lower()
+    password = data.get('password', '')
+    role = data.get('role', 'viewer').lower()
+    
+    # Validation
+    if not username or len(username) < 3 or len(username) > 50:
+        return jsonify({'error': 'Username must be 3-50 characters long'}), 400
+    
+    if not email or '@' not in email:
+        return jsonify({'error': 'Valid email address required'}), 400
+    
+    if not password or len(password) < 8:
+        return jsonify({'error': 'Password must be at least 8 characters long'}), 400
+    
+    # Validate role
+    if role not in ['admin', 'analyst', 'viewer']:
+        role = 'viewer'  # Default to viewer for invalid roles
+    
+    # Only admins can create admin users
+    if role == 'admin':
+        current_user = get_current_user()
+        if not current_user or not current_user.has_permission('admin'):
+            role = 'viewer'  # Downgrade to viewer if not admin
+    
+    # Check if user already exists
+    if User.find_by_username(username):
+        return jsonify({'error': 'Username already exists'}), 409
+    
+    if User.find_by_email(email):
+        return jsonify({'error': 'Email already registered'}), 409
+    
+    # Create new user
+    try:
+        user = User(
+            username=username,
+            email=email,
+            role=role
+        )
+        user.set_password(password)
+        user.save()
         
         # Update last login
         user.last_login = datetime.utcnow()
@@ -155,58 +70,88 @@ class Login(Resource):
         access_token = create_access_token(identity=str(user._id))
         refresh_token = create_refresh_token(identity=str(user._id))
         
-        return {
+        return jsonify({
             'access_token': access_token,
             'refresh_token': refresh_token,
             'user': user.to_dict()
-        }
-
-
-@auth_ns.route('/refresh')
-class RefreshToken(Resource):
-    @jwt_required(refresh=True)
-    @auth_ns.marshal_with(token_response)
-    def post(self):
-        """Refresh access token using refresh token"""
-        import logging
-        logger = logging.getLogger(__name__)
+        })
         
-        try:
-            logger.info("Refresh token endpoint called")
-            
-            # Get current user from refresh token
-            current_user_id = get_jwt_identity()
-            logger.info(f"Extracted user ID from refresh token: {current_user_id}")
-            
-            if not current_user_id:
-                logger.error("No user ID found in refresh token")
-                auth_ns.abort(401, 'Invalid refresh token - no user identity')
-            
-            user = User.find_by_id(current_user_id)
-            if not user:
-                logger.error(f"User not found for ID: {current_user_id}")
-                auth_ns.abort(401, 'User not found')
-            
-            logger.info(f"Creating new tokens for user: {user.username}")
-            
-            # Create new access token
-            access_token = create_access_token(identity=current_user_id)
-            # Also create a new refresh token to extend session
-            refresh_token = create_refresh_token(identity=current_user_id)
-            
-            logger.info("Token refresh successful")
-            
-            return {
-                'access_token': access_token,
-                'refresh_token': refresh_token,
-                'user': user.to_dict()
-            }
-            
-        except Exception as e:
-            logger.error(f"Token refresh failed with exception: {e}")
-            import traceback
-            logger.error(f"Traceback: {traceback.format_exc()}")
-            auth_ns.abort(422, f'Token refresh failed: {str(e)}')
+    except Exception as e:
+        return jsonify({'error': f'User registration failed: {str(e)}'}), 500
+
+
+@auth_bp.route('/login', methods=['POST'])
+def login():
+    """Authenticate user and return JWT tokens"""
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    
+    if not username or not password:
+        return jsonify({'error': 'Username and password required'}), 400
+    
+    user = User.find_by_username(username)
+    if not user or not user.check_password(password):
+        return jsonify({'error': 'Invalid credentials'}), 401
+    
+    # Update last login
+    user.last_login = datetime.utcnow()
+    user.save()
+    
+    # Create tokens
+    access_token = create_access_token(identity=str(user._id))
+    refresh_token = create_refresh_token(identity=str(user._id))
+    
+    return jsonify({
+        'access_token': access_token,
+        'refresh_token': refresh_token,
+        'user': user.to_dict()
+    })
+
+
+@auth_bp.route('/refresh', methods=['POST'])
+@jwt_required(refresh=True)
+def refresh():
+    """Refresh access token using refresh token"""
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    try:
+        logger.info("Refresh token endpoint called")
+        
+        # Get current user from refresh token
+        current_user_id = get_jwt_identity()
+        logger.info(f"Extracted user ID from refresh token: {current_user_id}")
+        
+        if not current_user_id:
+            logger.error("No user ID found in refresh token")
+            return jsonify({'error': 'Invalid refresh token - no user identity'}), 401
+        
+        user = User.find_by_id(current_user_id)
+        if not user:
+            logger.error(f"User not found for ID: {current_user_id}")
+            return jsonify({'error': 'User not found'}), 401
+        
+        logger.info(f"Creating new tokens for user: {user.username}")
+        
+        # Create new access token
+        access_token = create_access_token(identity=current_user_id)
+        # Also create a new refresh token to extend session
+        refresh_token = create_refresh_token(identity=current_user_id)
+        
+        logger.info("Token refresh successful")
+        
+        return jsonify({
+            'access_token': access_token,
+            'refresh_token': refresh_token,
+            'user': user.to_dict()
+        })
+        
+    except Exception as e:
+        logger.error(f"Token refresh failed with exception: {e}")
+        import traceback
+        logger.error(f"Traceback: {traceback.format_exc()}")
+        return jsonify({'error': f'Token refresh failed: {str(e)}'}), 422
 
 
 @auth_ns.route('/refresh-debug')
