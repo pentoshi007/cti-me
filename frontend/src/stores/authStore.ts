@@ -111,16 +111,14 @@ export const useAuthStore = create<AuthState>()(
         }
 
         try {
-          // Send refresh token in Authorization header, not request body
-          const response = await apiClient.post(
-            "/api/auth/refresh",
-            {},
-            {
-              headers: {
-                Authorization: `Bearer ${refreshToken}`,
-              },
-            }
-          );
+          // Temporarily set refresh token for the request
+          const originalAuth =
+            apiClient.defaults.headers.common["Authorization"];
+          apiClient.defaults.headers.common[
+            "Authorization"
+          ] = `Bearer ${refreshToken}`;
+
+          const response = await apiClient.post("/api/auth/refresh");
 
           const { access_token, refresh_token, user } = response.data;
 
@@ -132,7 +130,7 @@ export const useAuthStore = create<AuthState>()(
           set({
             user,
             accessToken: access_token,
-            refreshToken: refresh_token, // Update refresh token too
+            refreshToken: refresh_token || refreshToken, // Keep old refresh token if new one not provided
             isAuthenticated: true,
           });
         } catch (error) {
@@ -143,12 +141,33 @@ export const useAuthStore = create<AuthState>()(
       },
 
       initialize: () => {
-        const { accessToken } = get();
-        if (accessToken) {
+        const { accessToken, refreshToken } = get();
+        if (accessToken && refreshToken) {
           apiClient.defaults.headers.common[
             "Authorization"
           ] = `Bearer ${accessToken}`;
           set({ isAuthenticated: true });
+
+          // Try to refresh token on startup if access token is expired
+          try {
+            // Decode JWT to check expiration (basic check)
+            const payload = JSON.parse(atob(accessToken.split(".")[1]));
+            const now = Date.now() / 1000;
+            if (payload.exp && payload.exp < now + 60) {
+              // If expires within 1 minute
+              get()
+                .refreshAuth()
+                .catch(() => {
+                  console.warn("Token refresh failed on initialization");
+                  get().logout();
+                });
+            }
+          } catch (error) {
+            console.warn("Invalid token format, logging out");
+            get().logout();
+          }
+        } else {
+          get().logout();
         }
       },
 
@@ -173,7 +192,7 @@ export const useAuthStore = create<AuthState>()(
         const rolePermissions = {
           admin: ["admin", "tag", "export", "view", "edit", "delete"],
           analyst: ["tag", "export", "view", "edit"],
-          viewer: ["view", "tag"],  // Added 'tag' permission for viewers when logged in
+          viewer: ["view", "tag"], // Added 'tag' permission for viewers when logged in
         };
 
         const userPermissions =

@@ -33,7 +33,8 @@ start_backend() {
         python3 -m venv venv
     fi
     
-    # Activate virtual environment
+    # Activate virtual environment and install dependencies
+    echo "🔌 Activating virtual environment..."
     source venv/bin/activate
     
     # Install dependencies
@@ -53,9 +54,9 @@ start_backend() {
         echo "✅ Created .env file from example. Please update it with your API keys."
     fi
     
-    # Start backend server
-    echo "🚀 Starting Flask backend on http://localhost:5001"
-    python app.py &
+    # Start backend server (using the virtual environment's python)
+    echo "🚀 Starting Flask backend on http://localhost:8080"
+    source venv/bin/activate && python app.py &
     BACKEND_PID=$!
     
     cd ..
@@ -109,8 +110,8 @@ echo ""
 echo "✅ CTI Dashboard is starting up!"
 echo ""
 echo "🌐 Frontend: http://localhost:3000"
-echo "🔧 Backend API: http://localhost:5001"
-echo "📚 API Docs: http://localhost:5001/docs/"
+echo "🔧 Backend API: http://localhost:8080"
+echo "📚 API Docs: http://localhost:8080/docs/"
 echo ""
 echo "🔑 Default credentials:"
 echo "   Username: admin"

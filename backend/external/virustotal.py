@@ -28,7 +28,7 @@ class VirusTotalClient:
             logger.warning("VirusTotal API key not configured")
     
     async def _check_rate_limit(self):
-        """Check and enforce rate limiting"""
+        """Check and enforce rate limiting with improved logic"""
         now = datetime.utcnow()
         
         # Reset counter if minute has passed
@@ -36,14 +36,20 @@ class VirusTotalClient:
             self.request_count = 0
             self.last_request_time = now
         
-        # Wait if rate limit exceeded
+        # Wait if rate limit exceeded, but cap the wait time
         if self.request_count >= self.rate_limit:
             sleep_time = 60 - (now - self.last_request_time).total_seconds()
             if sleep_time > 0:
-                logger.info(f"Rate limit reached, sleeping for {sleep_time:.2f} seconds")
-                await asyncio.sleep(sleep_time)
+                # Cap sleep time to maximum 60 seconds to prevent excessive delays
+                capped_sleep_time = min(sleep_time, 60)
+                logger.info(f"Rate limit reached, sleeping for {capped_sleep_time:.2f} seconds")
+                await asyncio.sleep(capped_sleep_time)
                 self.request_count = 0
                 self.last_request_time = datetime.utcnow()
+        
+        # Add small delay between requests to prevent bursting
+        if self.request_count > 0:
+            await asyncio.sleep(15)  # 15 seconds between requests for free tier
     
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
     async def _make_request(self, endpoint: str, headers: Dict = None) -> Optional[Dict]:

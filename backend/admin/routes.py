@@ -97,17 +97,20 @@ class TriggerIngest(Resource):
                 logger.info("Creating URLHausFetcher instance...")
                 fetcher = URLHausFetcher()
                 
-                logger.info("Setting up asyncio loop...")
-                # Run in asyncio loop
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
+                logger.info("Starting URLHaus fetch and ingest...")
+                # Use asyncio.run for better loop management
                 try:
-                    logger.info("Starting URLHaus fetch and ingest...")
-                    stats = loop.run_until_complete(fetcher.fetch_and_ingest(limit))
+                    stats = asyncio.run(fetcher.fetch_and_ingest(limit))
                     logger.info(f"URLHaus fetch and ingest completed with stats: {stats}")
-                finally:
-                    logger.info("Closing asyncio loop...")
-                    loop.close()
+                except RuntimeError as e:
+                    if "asyncio.run() cannot be called from a running event loop" in str(e):
+                        # Fallback for running in existing loop
+                        import nest_asyncio
+                        nest_asyncio.apply()
+                        loop = asyncio.get_event_loop()
+                        stats = loop.run_until_complete(fetcher.fetch_and_ingest(limit))
+                    else:
+                        raise
                 
                 response = {
                     'success': True,
@@ -366,12 +369,17 @@ class TriggerEnrichment(Resource):
             lookup_service = LookupService()
             
             # Run bulk enrichment
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
             try:
-                stats = loop.run_until_complete(lookup_service.bulk_enrich_recent_iocs())
-            finally:
-                loop.close()
+                stats = asyncio.run(lookup_service.bulk_enrich_recent_iocs())
+            except RuntimeError as e:
+                if "asyncio.run() cannot be called from a running event loop" in str(e):
+                    # Fallback for running in existing loop
+                    import nest_asyncio
+                    nest_asyncio.apply()
+                    loop = asyncio.get_event_loop()
+                    stats = loop.run_until_complete(lookup_service.bulk_enrich_recent_iocs())
+                else:
+                    raise
             
             response = {
                 'success': True,
@@ -746,17 +754,27 @@ class AutoRunExecute(Resource):
                 logger.info("Auto-triggering URLHaus ingestion (5+ hours since last run)")
                 try:
                     fetcher = URLHausFetcher()
-                    loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(loop)
                     try:
-                        stats = loop.run_until_complete(fetcher.fetch_and_ingest(limit=1000))  # Limit for auto-run
+                        stats = asyncio.run(fetcher.fetch_and_ingest(limit=1000))  # Limit for auto-run
                         results['ingestion'] = {
                             'executed': True,
                             'reason': 'Auto-triggered after 5+ hours',
                             'stats': stats
                         }
-                    finally:
-                        loop.close()
+                    except RuntimeError as e:
+                        if "asyncio.run() cannot be called from a running event loop" in str(e):
+                            # Fallback for running in existing loop
+                            import nest_asyncio
+                            nest_asyncio.apply()
+                            loop = asyncio.get_event_loop()
+                            stats = loop.run_until_complete(fetcher.fetch_and_ingest(limit=1000))
+                            results['ingestion'] = {
+                                'executed': True,
+                                'reason': 'Auto-triggered after 5+ hours',
+                                'stats': stats
+                            }
+                        else:
+                            raise
                 except Exception as e:
                     results['ingestion'] = {
                         'executed': False,
@@ -771,17 +789,27 @@ class AutoRunExecute(Resource):
                 logger.info("Auto-triggering bulk enrichment (5+ hours since last run)")
                 try:
                     lookup_service = LookupService()
-                    loop = asyncio.new_event_loop()
-                    asyncio.set_event_loop(loop)
                     try:
-                        stats = loop.run_until_complete(lookup_service.bulk_enrich_recent_iocs(limit=100))  # Limit for auto-run
+                        stats = asyncio.run(lookup_service.bulk_enrich_recent_iocs(limit=100))  # Limit for auto-run
                         results['enrichment'] = {
                             'executed': True,
                             'reason': 'Auto-triggered after 5+ hours',
                             'stats': stats
                         }
-                    finally:
-                        loop.close()
+                    except RuntimeError as e:
+                        if "asyncio.run() cannot be called from a running event loop" in str(e):
+                            # Fallback for running in existing loop
+                            import nest_asyncio
+                            nest_asyncio.apply()
+                            loop = asyncio.get_event_loop()
+                            stats = loop.run_until_complete(lookup_service.bulk_enrich_recent_iocs(limit=100))
+                            results['enrichment'] = {
+                                'executed': True,
+                                'reason': 'Auto-triggered after 5+ hours',
+                                'stats': stats
+                            }
+                        else:
+                            raise
                 except Exception as e:
                     results['enrichment'] = {
                         'executed': False,

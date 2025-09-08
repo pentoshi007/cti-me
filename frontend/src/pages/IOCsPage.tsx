@@ -117,7 +117,7 @@ const IOCsPage = () => {
   // Export mutation  
   const exportMutation = useMutation({
     mutationFn: async (data: any) => {
-      const response = await fetch('http://localhost:8080/api/exports', {
+      const response = await fetch('/api/exports', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -106,7 +106,7 @@ class URLHausFetcher:
                 return None
     
     async def ingest_iocs(self, ioc_records: List[Dict], batch_size: int = 1000) -> Dict[str, int]:
-        """Ingest IOC records into database with progress logging"""
+        """Ingest IOC records into database with progress logging and better error handling"""
         stats = {
             'fetched_count': len(ioc_records),
             'new_count': 0,
@@ -116,13 +116,27 @@ class URLHausFetcher:
         
         total_records = len(ioc_records)
         processed = 0
+        consecutive_errors = 0
+        max_consecutive_errors = 10
         
         for i, ioc_data in enumerate(ioc_records):
             # Log progress every batch_size records
             if i > 0 and i % batch_size == 0:
                 progress = (i / total_records) * 100
                 logger.info(f"Ingestion progress: {i}/{total_records} ({progress:.1f}%) - Stats: new={stats['new_count']}, updated={stats['updated_count']}, errors={stats['error_count']}")
+            
+            # Check for too many consecutive errors
+            if consecutive_errors >= max_consecutive_errors:
+                logger.error(f"Too many consecutive errors ({consecutive_errors}), stopping ingestion")
+                break
+                
             try:
+                # Validate IOC data
+                if not ioc_data.get('value') or not ioc_data.get('type'):
+                    logger.warning(f"Invalid IOC data, skipping: {ioc_data}")
+                    consecutive_errors += 1
+                    continue
+                
                 # Check if IOC already exists
                 existing_ioc = IOC.find_by_value(ioc_data['type'], ioc_data['value'])
                 
@@ -141,6 +155,7 @@ class URLHausFetcher:
                     
                     existing_ioc.save()
                     stats['updated_count'] += 1
+                    consecutive_errors = 0  # Reset error counter on success
                     
                 else:
                     # Create new IOC
@@ -172,11 +187,19 @@ class URLHausFetcher:
                     
                     ioc.save()
                     stats['new_count'] += 1
+                    consecutive_errors = 0  # Reset error counter on success
+                
+                # Add small delay to prevent overwhelming the database
+                if i % 100 == 0 and i > 0:
+                    await asyncio.sleep(0.1)  # 100ms delay every 100 records
                 
             except Exception as e:
                 logger.error(f"Failed to ingest IOC {ioc_data.get('value', 'unknown')}: {e}")
                 stats['error_count'] += 1
+                consecutive_errors += 1
         
+        # Final progress log
+        logger.info(f"Ingestion completed: {total_records} processed - Stats: new={stats['new_count']}, updated={stats['updated_count']}, errors={stats['error_count']}")
         return stats
     
     def record_ingest_run(self, stats: Dict[str, int], started_at: datetime = None, error: str = None) -> str:

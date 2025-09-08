@@ -51,16 +51,14 @@ const DashboardPage = () => {
     refetchInterval: 120000, // Reduced to 2 minutes to avoid rate limiting
     retry: 2,
     retryDelay: 5000,
-    onError: (error) => {
-      console.warn('Failed to fetch overview metrics:', error)
-      // Don't show error toast for metrics as it's not critical
-    }
+    // Add fallback data to prevent crashes
+    placeholderData: { total_iocs: 0, severity_counts: {}, recent_iocs_24h: 0, top_tags: [] }
   })
 
   // Fetch time series data (reduced frequency to avoid rate limiting)
   const { data: timeseriesData, isLoading: timeseriesLoading } = useQuery({
     queryKey: ['metrics', 'timeseries'],
-    queryFn: () => api.metrics.timeseries().then(res => res.data),
+    queryFn: () => api.metrics.timeSeries().then(res => res.data),
     refetchInterval: 180000, // Reduced to 3 minutes to avoid rate limiting
     retry: 2,
     retryDelay: 5000,
@@ -76,10 +74,6 @@ const DashboardPage = () => {
     refetchInterval: 120000, // Reduced to 2 minutes to avoid issues
     retry: 1, // Reduce retry attempts 
     retryDelay: 10000, // Longer delay between retries
-    onError: (error: any) => {
-      console.warn('Failed to fetch recent IOCs:', error)
-      // Don't show error toast for dashboard background requests
-    },
     // Add fallback data to prevent crashes
     placeholderData: { iocs: [], total: 0 }
   })

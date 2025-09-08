@@ -6,6 +6,10 @@ import { Toaster } from 'react-hot-toast'
 
 import App from './App.tsx'
 import './index.css'
+import { useAuthStore } from './stores/authStore'
+
+// Initialize auth store on app startup
+useAuthStore.getState().initialize();
 
 const queryClient = new QueryClient({
   defaultOptions: {
