@@ -58,9 +58,11 @@ def create_serverless_app():
         app.config.from_object(Config)
         
         logger.info("Initializing CORS...")
-        # Initialize CORS with credentials support
+        # Initialize CORS with credentials support - must specify exact origins, not "*"
         CORS(app, 
-             resources={r"/api/*": {"origins": ["*"]}},
+             resources={r"/api/*": {
+                 "origins": ["https://cti-me.vercel.app", "http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:3000"]
+             }},
              supports_credentials=True,
              allow_headers=["Content-Type", "Authorization", "Accept", "X-Requested-With"],
              methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
@@ -132,7 +134,10 @@ def create_serverless_app():
             if request.method == "OPTIONS":
                 from flask import make_response
                 response = make_response()
-                response.headers.add("Access-Control-Allow-Origin", "*")
+                origin = request.headers.get('Origin')
+                allowed_origins = ["https://cti-me.vercel.app", "http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:3000"]
+                if origin in allowed_origins:
+                    response.headers.add("Access-Control-Allow-Origin", origin)
                 response.headers.add('Access-Control-Allow-Headers', "*")
                 response.headers.add('Access-Control-Allow-Methods', "*")
                 response.headers.add('Access-Control-Allow-Credentials', "true")
