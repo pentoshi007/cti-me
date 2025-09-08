@@ -1,272 +1,248 @@
-# CTI Dashboard - Cyber Threat Intelligence Platform
+# 🔐 CTI Dashboard
 
-A comprehensive Cyber Threat Intelligence (CTI) Dashboard for aggregating, analyzing, and managing threat indicators with real-time enrichment capabilities.
+> **Cyber Threat Intelligence Dashboard** - A comprehensive platform for managing, analyzing, and enriching Indicators of Compromise (IOCs) with real-time threat intelligence feeds.
 
-![CTI Dashboard](https://img.shields.io/badge/CTI-Dashboard-blue?style=for-the-badge)
-![Flask](https://img.shields.io/badge/Flask-2.3.3-green?style=flat-square)
-![React](https://img.shields.io/badge/React-18.2.0-blue?style=flat-square)
-![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-green?style=flat-square)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.2.2-blue?style=flat-square)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/pentoshi007/cti-me.git)
 
-## 🚀 Features
+## 🌟 Features
 
-### Core Functionality
-- **Threat Intelligence Aggregation**: Automated ingestion from URLHaus feed
-- **IOC Enrichment**: Real-time enrichment with VirusTotal and AbuseIPDB
-- **Smart Threat Scoring**: Automated threat scoring (0-100) with severity classification
-- **Advanced Search & Filtering**: Multi-parameter search with pagination
-- **Tag Management**: Flexible tagging system for IOC categorization
-- **CSV Export**: Background job processing for large dataset exports
+### 🎯 Core Functionality
+- **IOC Management**: Create, update, and organize indicators of compromise
+- **Real-time Feed Ingestion**: Automated URLHaus feed integration
+- **Threat Intelligence Enrichment**: VirusTotal and AbuseIPDB integration
+- **Advanced Search & Filtering**: Powerful query capabilities
+- **Tag Management**: Categorize and organize threats
+- **Export Capabilities**: Multiple export formats (JSON, CSV, STIX)
 
-### Security & Access Control
+### 🔒 Security & Authentication
+- **Role-based Access Control**: Admin, Analyst, and Viewer roles
 - **JWT Authentication**: Secure token-based authentication
-- **Role-Based Access Control (RBAC)**: Admin, Analyst, and Viewer roles
-- **Rate Limiting**: Per-user and per-IP rate limiting
-- **Input Validation**: Comprehensive input sanitization
+- **Permission Management**: Granular permission system
+- **Session Management**: Automatic token refresh
 
-### User Experience
-- **Glassmorphic UI**: Modern, accessible interface with dark/light themes
-- **Responsive Design**: Mobile-first approach with Tailwind CSS
-- **Real-time Analytics**: Interactive charts and KPI dashboards
-- **Export Functionality**: CSV export with background processing
+### 📊 Analytics & Monitoring
+- **System Statistics**: Real-time dashboard metrics
+- **Activity Monitoring**: Track ingestion runs and enrichment operations
+- **Performance Metrics**: API usage and rate limiting
+- **Administrative Tools**: User management and system health
+
+### 🎨 Modern UI/UX
+- **Responsive Design**: Mobile-first approach
+- **Dark/Light Theme**: Adaptive theming
+- **Real-time Updates**: Live data refresh
+- **Intuitive Navigation**: Clean, modern interface
 
 ## 🏗️ Architecture
 
-### Backend (Flask)
-- **Framework**: Flask with Flask-RESTX for API documentation
-- **Database**: MongoDB Atlas with optimized indexes
-- **Scheduler**: APScheduler for periodic tasks
-- **External APIs**: VirusTotal and AbuseIPDB integration
-- **Rate Limiting**: Flask-Limiter for API protection
-
-### Frontend (React + TypeScript)
-- **Framework**: React 18 with TypeScript
-- **Build Tool**: Vite for fast development
-- **Styling**: Tailwind CSS with glassmorphic design
-- **State Management**: Zustand for global state
-- **Data Fetching**: TanStack Query for server state
-- **Charts**: Recharts for data visualization
-
-### Database Schema
+### Backend (Python Flask)
 ```
-indicators: IOC storage with threat scoring
-lookups: User lookup history with TTL
-tags: Tag management system
-exports: Export job tracking with TTL
-ingest_runs: Ingestion run logs
-users: User authentication and roles
+backend/
+├── auth/           # Authentication & authorization
+├── iocs/           # IOC management
+├── lookup/         # Threat intelligence enrichment
+├── ingestion/      # Feed ingestion (URLHaus)
+├── exports/        # Data export functionality
+├── admin/          # Administrative operations
+├── external/       # External API integrations
+└── utils/          # Utility functions
 ```
 
-## 🛠️ Installation & Setup
+### Frontend (React TypeScript)
+```
+frontend/src/
+├── components/     # Reusable UI components
+├── pages/          # Application pages
+├── stores/         # State management (Zustand)
+├── lib/            # API client and utilities
+└── styles/         # Tailwind CSS styling
+```
+
+## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.9+
-- Node.js 18+
-- MongoDB Atlas account
-- VirusTotal API key (free tier)
-- AbuseIPDB API key (free tier)
+- **Python 3.11+**
+- **Node.js 18+**
+- **MongoDB** (local or cloud)
+- **API Keys** (optional):
+  - VirusTotal API key
+  - AbuseIPDB API key
 
-### Backend Setup
+### Local Development
 
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd project/backend
+   git clone https://github.com/pentoshi007/cti-me.git
+   cd cti-me
    ```
 
-2. **Create virtual environment**
+2. **Backend Setup**
    ```bash
-   python -m venv venv
+   cd backend
+   
+   # Create virtual environment (included in repo)
    source venv/bin/activate  # On Windows: venv\\Scripts\\activate
-   ```
-
-3. **Install dependencies**
-   ```bash
+   
+   # Install dependencies
    pip install -r requirements.txt
-   ```
-
-4. **Configure environment variables**
-   ```bash
+   
+   # Configure environment
    cp .env.example .env
    # Edit .env with your configuration
    ```
 
-5. **Required Environment Variables**
-   ```env
-   FLASK_ENV=development
-   FLASK_SECRET_KEY=your_secret_key_here
-   MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/cti
-   MONGO_DB=cti
-   VT_API_KEY=your_virustotal_api_key
-   ABUSEIPDB_API_KEY=your_abuseipdb_api_key
-   JWT_ACCESS_TTL=900
-   JWT_REFRESH_TTL=2592000
-   ```
-
-6. **Run the backend**
+3. **Frontend Setup**
    ```bash
-   python app.py
-   ```
-
-### Frontend Setup
-
-1. **Navigate to frontend directory**
-   ```bash
-   cd ../frontend
-   ```
-
-2. **Install dependencies**
-   ```bash
+   cd frontend
+   
+   # Install dependencies
    npm install
+   
+   # Configure environment
+   cp .env.example .env.local
+   # Edit .env.local with your configuration
    ```
 
-3. **Start development server**
+4. **Start Development Servers**
    ```bash
-   npm run dev
+   # From project root
+   ./start.sh
    ```
 
-## 🔧 Configuration
+   This will start:
+   - **Backend**: http://localhost:8080
+   - **Frontend**: http://localhost:3000
+   - **API Docs**: http://localhost:8080/docs/
 
-### MongoDB Atlas Setup
-1. Create a free MongoDB Atlas cluster
-2. Create a database user with `readWrite` permissions
-3. Configure network access (add your IP or 0.0.0.0/0 for testing)
-4. Get the connection string and update MONGO_URI
-
-### API Keys Setup
-1. **VirusTotal**: Register at https://www.virustotal.com/gui/join-us
-2. **AbuseIPDB**: Register at https://www.abuseipdb.com/register
-
-## 📚 API Documentation
-
-The backend provides comprehensive API documentation via Swagger UI at:
-```
-http://localhost:5001/docs/
-```
-
-### Key Endpoints
-- `POST /api/auth/login` - User authentication
-- `GET /api/iocs` - List IOCs with filtering
-- `POST /api/lookup` - Perform IOC lookup
-- `GET /api/metrics/overview` - Dashboard metrics
-- `POST /api/exports` - Create CSV export
-
-## 🎯 Default Credentials
-
-For testing purposes, a default admin user is created:
+### Default Credentials
 - **Username**: `admin`
 - **Password**: `admin123`
 
-⚠️ **Change these credentials in production!**
+## 🌐 Deployment
 
-## 🔐 Security Features
+### Vercel Deployment (Recommended)
 
-### Authentication & Authorization
-- JWT-based authentication with access and refresh tokens
-- Role-based permissions (Admin, Analyst, Viewer)
-- Automatic token refresh on API calls
-- Secure password hashing with Werkzeug
+#### Backend Deployment
+1. **Create new Vercel project** for backend
+2. **Set environment variables**:
+   ```
+   MONGO_URI=your_mongodb_connection_string
+   FLASK_SECRET_KEY=your_secret_key
+   VT_API_KEY=your_virustotal_api_key (optional)
+   ABUSEIPDB_API_KEY=your_abuseipdb_api_key (optional)
+   ```
+3. **Deploy** from `backend/` directory
 
-### Rate Limiting
-- Lookup endpoint: 60 requests/minute per user
-- Global API limits: 200 requests/day, 50 requests/hour
-- External API rate limiting with backoff strategies
+#### Frontend Deployment
+1. **Create new Vercel project** for frontend
+2. **Set environment variables**:
+   ```
+   VITE_API_URL=https://your-backend-deployment.vercel.app
+   ```
+3. **Deploy** from `frontend/` directory
 
-### Data Protection
-- Input validation and sanitization
-- MongoDB injection prevention
-- HTTPS enforcement in production
-- Secrets management via environment variables
-
-## 📊 Monitoring & Analytics
-
-### Dashboard Metrics
-- Total IOCs and severity distribution
-- Recent activity (24h/7d trends)
-- Top threat sources and tags
-- Time series charts for threat trends
-
-### System Administration
-- Database statistics and collection counts
-- Manual ingestion triggers
-- Enrichment job management
-- User management (Admin only)
-
-## 🚀 Production Deployment
-
-### Docker Deployment (Recommended)
+### Docker Deployment
 ```bash
 # Build and run with Docker Compose
-docker-compose up -d
+docker-compose up --build
 ```
 
-### Manual Deployment
-1. Set up reverse proxy (nginx/Apache)
-2. Configure SSL certificates
-3. Update environment variables for production
-4. Set up process manager (PM2/systemd)
-5. Configure log rotation
+### Railway/Heroku Deployment
+Configuration files included:
+- `backend/Procfile`
+- `backend/railway.toml`
+- `backend/runtime.txt`
 
-## 🧪 Testing
+## ⚙️ Configuration
 
-### Backend Testing
+### Environment Variables
+
+#### Backend (.env)
+```env
+# MongoDB
+MONGO_URI=mongodb://localhost:27017/
+MONGO_DB=cti
+
+# Authentication
+FLASK_SECRET_KEY=your_secret_key
+JWT_ACCESS_TTL=3600
+JWT_REFRESH_TTL=2592000
+
+# External APIs
+VT_API_KEY=your_virustotal_api_key
+ABUSEIPDB_API_KEY=your_abuseipdb_api_key
+
+# CORS
+CORS_ORIGINS=http://localhost:3000,https://your-frontend-domain.com
+```
+
+#### Frontend (.env.local)
+```env
+VITE_API_URL=http://localhost:8080
+```
+
+## 📡 API Documentation
+
+Interactive API documentation available at: `http://localhost:8080/docs/`
+
+### Key Endpoints
+- **Authentication**: `/api/auth/*`
+- **IOCs**: `/api/iocs/*`
+- **Lookups**: `/api/lookup/*`
+- **Admin**: `/api/admin/*`
+- **Exports**: `/api/exports/*`
+
+## 🔧 Development
+
+### Code Structure
+- **Backend**: Python Flask with Flask-RESTX for API documentation
+- **Frontend**: React with TypeScript, Tailwind CSS, Zustand for state management
+- **Database**: MongoDB with PyMongo
+- **Authentication**: JWT with Flask-JWT-Extended
+
+### Recent Improvements
+- ✅ Fixed JWT authentication errors
+- ✅ Improved URLHaus ingestion with better asyncio handling  
+- ✅ Enhanced VirusTotal rate limiting
+- ✅ Better error handling throughout the application
+- ✅ Frontend token refresh improvements
+
+### Testing
 ```bash
+# Backend tests
 cd backend
-pytest tests/
-```
+python -m pytest
 
-### Frontend Testing
-```bash
+# Frontend tests  
 cd frontend
-npm run test
+npm test
 ```
-
-## 📈 Performance Optimizations
-
-### Database
-- Optimized MongoDB indexes for fast queries
-- TTL indexes for automatic data cleanup
-- Connection pooling with configurable limits
-
-### Frontend
-- Code splitting with React.lazy
-- Image optimization and lazy loading
-- Efficient state management with Zustand
-- Query caching with TanStack Query
-
-### Backend
-- Request rate limiting and caching
-- Background job processing for exports
-- Efficient aggregation pipelines
 
 ## 🤝 Contributing
 
 1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-## 📝 License
+## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🆘 Support
 
-For issues and questions:
-1. Check the documentation
-2. Search existing issues
-3. Create a new issue with detailed information
+- **Documentation**: Check the [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)
+- **Issues**: [GitHub Issues](https://github.com/pentoshi007/cti-me/issues)
+- **API Docs**: Available at `/docs/` endpoint
 
-## 🔄 Roadmap
+## 🙏 Acknowledgments
 
-- [ ] WebSocket support for real-time updates
-- [ ] Additional threat intelligence feeds
-- [ ] Machine learning-based threat scoring
-- [ ] API rate limiting dashboard
-- [ ] Advanced export formats (JSON, STIX)
-- [ ] Integration with SIEM systems
+- **URLHaus** by abuse.ch for threat intelligence feeds
+- **VirusTotal** for malware scanning API
+- **AbuseIPDB** for IP reputation data
+- **MongoDB** for database solutions
+- **Vercel** for deployment platform
 
 ---
 
-Built with ❤️ for the cybersecurity community
+**Built with ❤️ for the cybersecurity community**
