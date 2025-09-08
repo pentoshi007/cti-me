@@ -58,10 +58,11 @@ def create_serverless_app():
         app.config.from_object(Config)
         
         logger.info("Initializing CORS...")
-        # Simple CORS configuration that should work reliably
+        # Simple CORS configuration - let Flask-CORS handle everything
         CORS(app, 
              origins=["https://cti-web-ten.vercel.app", "http://localhost:3000"],
              supports_credentials=True,
+             send_wildcard=False,  # Don't send * when credentials are true
              allow_headers=["Content-Type", "Authorization", "Accept", "X-Requested-With"],
              methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
         )
@@ -144,37 +145,7 @@ def create_serverless_app():
                 'message': 'Login required for real data'
             }
         
-        # Add CORS headers to all responses as fallback
-        @app.after_request
-        def after_request(response):
-            from flask import request
-            origin = request.headers.get('Origin')
-            allowed_origins = ["https://cti-web-ten.vercel.app", "http://localhost:3000"]
-            
-            if origin in allowed_origins:
-                response.headers.add('Access-Control-Allow-Origin', origin)
-                response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,Accept,X-Requested-With')
-                response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS')
-                response.headers.add('Access-Control-Allow-Credentials', 'true')
-            
-            return response
-        
-        # Handle OPTIONS preflight requests
-        @app.before_request
-        def handle_preflight():
-            from flask import request
-            if request.method == "OPTIONS":
-                from flask import make_response
-                response = make_response()
-                origin = request.headers.get('Origin')
-                allowed_origins = ["https://cti-web-ten.vercel.app", "http://localhost:3000"]
-                
-                if origin in allowed_origins:
-                    response.headers.add("Access-Control-Allow-Origin", origin)
-                    response.headers.add('Access-Control-Allow-Headers', "Content-Type,Authorization,Accept,X-Requested-With")
-                    response.headers.add('Access-Control-Allow-Methods', "GET,POST,PUT,DELETE,PATCH,OPTIONS")
-                    response.headers.add('Access-Control-Allow-Credentials', "true")
-                return response
+        # Let Flask-CORS handle all CORS logic automatically
         
         logger.info("Serverless Flask app created successfully")
         return app
