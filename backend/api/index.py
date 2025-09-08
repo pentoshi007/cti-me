@@ -58,13 +58,13 @@ def create_serverless_app():
         app.config.from_object(Config)
         
         logger.info("Initializing CORS...")
-        # Simple CORS configuration - let Flask-CORS handle everything
-        CORS(app, 
-             origins=["https://cti-web-ten.vercel.app", "http://localhost:3000"],
-             supports_credentials=True,
-             send_wildcard=False,  # Don't send * when credentials are true
-             allow_headers=["Content-Type", "Authorization", "Accept", "X-Requested-With"],
-             methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"]
+        # Simple CORS configuration - single origin string to avoid multi-value header
+        CORS(
+            app,
+            origins="https://cti-web-ten.vercel.app",
+            supports_credentials=False,
+            allow_headers=["Content-Type", "Authorization", "Accept", "X-Requested-With"],
+            methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
         )
         
         # Initialize JWT

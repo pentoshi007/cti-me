@@ -5,7 +5,8 @@ export const apiClient = axios.create({
   // In dev, rely on Vite proxy (relative URLs). In prod, use the deployed backend.
   baseURL: import.meta.env.DEV ? "" : "https://cti-me.vercel.app",
   timeout: 30000,
-  withCredentials: true,
+  // We pass JWT in Authorization header, so credentials are not required
+  withCredentials: false,
 });
 
 // Request interceptor for authentication
