@@ -63,7 +63,12 @@ def create_serverless_app():
         
         def check_origin(origin):
             """Check if origin is allowed"""
-            allowed_origins = ["http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:3000"]
+            allowed_origins = [
+                "http://localhost:3000", 
+                "http://localhost:3001", 
+                "http://127.0.0.1:3000",
+                "https://cti-web-ten.vercel.app"  # Specific frontend domain
+            ]
             is_vercel = origin and origin.endswith('.vercel.app') and origin.startswith('https://')
             return origin in allowed_origins or is_vercel
         
@@ -143,7 +148,12 @@ def create_serverless_app():
                 origin = request.headers.get('Origin')
                 
                 # Allow localhost for development and any vercel.app subdomain for production
-                allowed_origins = ["http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:3000"]
+                allowed_origins = [
+                    "http://localhost:3000", 
+                    "http://localhost:3001", 
+                    "http://127.0.0.1:3000",
+                    "https://cti-web-ten.vercel.app"  # Specific frontend domain
+                ]
                 is_vercel = origin and origin.endswith('.vercel.app') and origin.startswith('https://')
                 
                 if origin in allowed_origins or is_vercel:
