@@ -11,7 +11,7 @@ import {
   CheckCircleIcon,
   XCircleIcon,
 } from '@heroicons/react/24/outline'
-import { api } from '../lib/api'
+import { api } from '../lib/api.ts'
 import { useAuthStore } from '../stores/authStore'
 import toast from 'react-hot-toast'
 import clsx from 'clsx'
