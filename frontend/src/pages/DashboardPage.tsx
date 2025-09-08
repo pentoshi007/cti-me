@@ -29,7 +29,7 @@ import {
   XMarkIcon,
   TrophyIcon
 } from '@heroicons/react/24/outline'
-import { api } from '@/lib/api'
+import { api } from '../lib/api'
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, BarChart, Bar, Area, AreaChart } from 'recharts'
 import toast from 'react-hot-toast'
 

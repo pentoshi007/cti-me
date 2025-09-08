@@ -30,7 +30,7 @@ import {
   UserGroupIcon,
   BugAntIcon,
 } from '@heroicons/react/24/outline'
-import { api } from '@/lib/api'
+import { api } from '../lib/api'
 import { useAuthStore } from '../stores/authStore'
 import PermissionCheck from '../components/PermissionCheck'
 import toast from 'react-hot-toast'

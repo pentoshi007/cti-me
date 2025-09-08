@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { UserCircleIcon, KeyIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
 import { useAuthStore } from '../stores/authStore'
-import { apiClient } from '@/lib/api'
+import { apiClient } from '../lib/api'
 import toast from 'react-hot-toast'
 
 interface ChangePasswordForm {
