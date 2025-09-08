@@ -55,6 +55,8 @@ def create_serverless_app():
         # Create Flask app
         logger.info("Creating Flask app instance...")
         app = Flask(__name__)
+        # Accept both trailing and non-trailing slash URLs to avoid 308 redirects
+        app.url_map.strict_slashes = False
         app.config.from_object(Config)
         
         logger.info("Initializing CORS...")
