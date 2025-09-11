@@ -6,7 +6,8 @@ import json
 import csv
 import io
 from flask import Blueprint, request, jsonify, send_file, current_app
-from flask_jwt_extended import jwt_required, get_current_user
+from flask_jwt_extended import jwt_required
+from utils.decorators import get_current_user
 from bson import ObjectId
 from datetime import datetime
 import uuid

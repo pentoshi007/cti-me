@@ -4,7 +4,8 @@ Lookup API routes - Full Flask blueprint implementation
 import asyncio
 import logging
 from flask import Blueprint, request, jsonify, current_app
-from flask_jwt_extended import jwt_required, get_current_user
+from flask_jwt_extended import jwt_required
+from utils.decorators import get_current_user
 from bson import ObjectId
 from datetime import datetime
 import nest_asyncio
