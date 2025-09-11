@@ -57,7 +57,6 @@ def validate_ioc_data(data: Dict) -> tuple[Optional[str], Optional[str]]:
 
 
 @iocs_bp.route('/', methods=['GET'])
-@jwt_required()
 def list_iocs():
     """List IOCs with pagination and filtering"""
     try:
@@ -117,7 +116,6 @@ def list_iocs():
 
 
 @iocs_bp.route('/<ioc_id>', methods=['GET'])
-@jwt_required()
 def get_ioc(ioc_id):
     """Get specific IOC by ID"""
     try:

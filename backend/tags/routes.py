@@ -30,7 +30,6 @@ def require_permission(permission: str):
 
 
 @tags_bp.route('/', methods=['GET'])
-@jwt_required()
 def list_tags():
     """List all tags with optional filtering"""
     try:
@@ -240,7 +239,6 @@ def delete_tag(tag_id):
 
 
 @tags_bp.route('/stats', methods=['GET'])
-@jwt_required()
 def get_tag_stats():
     """Get tag usage statistics"""
     try:

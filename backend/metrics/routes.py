@@ -15,7 +15,6 @@ metrics_bp = Blueprint('metrics', __name__)
 
 
 @metrics_bp.route('/overview', methods=['GET'])
-@jwt_required()
 def get_overview():
     """Get overview metrics for dashboard"""
     try:
@@ -116,7 +115,6 @@ def get_overview():
 
 
 @metrics_bp.route('/timeseries', methods=['GET'])
-@jwt_required()
 def get_timeseries():
     """Get time series data for charts"""
     try:
@@ -230,7 +228,6 @@ def get_timeseries():
 
 
 @metrics_bp.route('/threats', methods=['GET'])
-@jwt_required()
 def get_threats():
     """Get threat intelligence metrics"""
     try:
