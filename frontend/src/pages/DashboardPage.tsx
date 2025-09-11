@@ -216,18 +216,24 @@ const DashboardPage = () => {
     )
   }
 
-  // Prepare charts data with interactivity
-  const severityData = overviewData?.severity_counts ? 
-    Object.entries(overviewData.severity_counts).map(([severity, count]) => ({
-      name: severity,
-      value: count,
-      color: severityColors[severity as keyof typeof severityColors] || '#6b7280'
-    })) : []
+  // Normalize overview metrics from backend shape
+  const totalIOCs = overviewData?.ioc_metrics?.total ?? overviewData?.total_iocs ?? 0
+  const severityCounts: Record<string, number> = overviewData?.ioc_metrics?.by_severity ?? overviewData?.severity_counts ?? {}
+  const recent24h = overviewData?.ioc_metrics?.recent_24h ?? overviewData?.recent_iocs_24h ?? 0
+  const topTags: Array<{ name: string; count: number }> = overviewData?.tag_metrics?.top_tags ?? overviewData?.top_tags ?? []
 
-  const chartData = timeseriesData?.datasets?.[0]?.data?.map((value: number, index: number) => ({
-    date: timeseriesData.labels[index],
-    iocs: value
-  })) || []
+  // Prepare charts data with interactivity
+  const severityData = Object.entries(severityCounts).map(([severity, count]) => ({
+    name: severity,
+    value: count,
+    color: severityColors[severity as keyof typeof severityColors] || '#6b7280'
+  }))
+
+  // Use backend timeseries shape (ioc_timeseries)
+  const chartData = (timeseriesData?.ioc_timeseries ?? []).map((row: any) => ({
+    date: row.date,
+    iocs: row.total ?? 0
+  }))
 
   return (
     <div className="space-y-6">
@@ -290,7 +296,7 @@ const DashboardPage = () => {
           {activeFilters.map((filter) => (
             <div key={filter} className="flex items-center gap-1 px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-sm">
               {filter}
-              <button onClick={() => removeFilter(filter)}>
+              <button onClick={() => removeFilter(filter)} aria-label={`Remove filter ${filter}`} title={`Remove filter ${filter}`}>
                 <XMarkIcon className="w-4 h-4" />
               </button>
             </div>
@@ -302,7 +308,7 @@ const DashboardPage = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <InteractiveKPICard
           title="Total IOCs"
-          value={overviewData?.total_iocs}
+          value={totalIOCs}
           subtitle="All indicators"
           icon={ShieldCheckIcon}
           color="blue"
@@ -310,7 +316,7 @@ const DashboardPage = () => {
         />
         <InteractiveKPICard
           title="Critical Threats"
-          value={overviewData?.severity_counts?.critical}
+          value={severityCounts?.critical}
           subtitle="Immediate action"
           icon={ExclamationTriangleIcon}
           color="red"
@@ -318,7 +324,7 @@ const DashboardPage = () => {
         />
         <InteractiveKPICard
           title="Last 24 Hours"
-          value={overviewData?.recent_iocs_24h}
+          value={recent24h}
           subtitle="New indicators"
           icon={ClockIcon}
           trend="up"
@@ -328,7 +334,7 @@ const DashboardPage = () => {
         />
         <InteractiveKPICard
           title="Active Tags"
-          value={overviewData?.top_tags?.length}
+          value={Array.isArray(topTags) ? topTags.length : 0}
           subtitle="Categories"
           icon={TagIcon}
           color="purple"
@@ -376,7 +382,7 @@ const DashboardPage = () => {
                 >
                   Investigate ({criticalCount})
                 </button>
-                <button onClick={() => setAlertsVisible(false)}>
+                <button onClick={() => setAlertsVisible(false)} aria-label="Dismiss alert" title="Dismiss alert">
                   <XMarkIcon className="w-5 h-5 text-white/50 hover:text-white/70" />
                 </button>
               </div>
@@ -672,7 +678,7 @@ const DashboardPage = () => {
         <div className="glass-bg rounded-2xl p-6">
             <h3 className="text-lg font-semibold text-white mb-4">Popular Tags</h3>
             <div className="flex flex-wrap gap-2">
-              {overviewData?.top_tags?.slice(0, 10).map((tag: any) => (
+              {(Array.isArray(topTags) ? topTags : []).slice(0, 10).map((tag: any) => (
                 <button
                   key={tag.name}
                   onClick={() => handleTagClick(tag.name)}
