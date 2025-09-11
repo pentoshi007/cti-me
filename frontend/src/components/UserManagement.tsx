@@ -197,7 +197,7 @@ const UserManagement = () => {
           <div className="flex items-center space-x-3">
             <UserGroupIcon className="w-6 h-6 text-blue-400" />
             <h3 className="text-lg font-semibold text-white">
-              System Users ({users?.length || 0})
+              System Users ({(users?.total_users ?? users?.users?.length) || 0})
             </h3>
           </div>
         </div>
@@ -221,7 +221,7 @@ const UserManagement = () => {
                 </tr>
               </thead>
               <tbody>
-                {users?.map((user: User) => (
+                {(Array.isArray(users?.users) ? users.users : []).map((user: User) => (
                   <tr key={user.id} className="border-b border-white/5 hover:bg-white/5">
                     <td className="py-4 px-6">
                       <div>
@@ -286,6 +286,8 @@ const UserManagement = () => {
               <button
                 onClick={() => setShowCreateModal(false)}
                 className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                aria-label="Close create user modal"
+                title="Close"
               >
                 <XMarkIcon className="w-5 h-5 text-white" />
               </button>
@@ -348,6 +350,7 @@ const UserManagement = () => {
                   value={formData.role}
                   onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
                   className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  aria-label="Select role"
                 >
                   <option value="viewer">Viewer</option>
                   <option value="analyst">Analyst</option>
@@ -384,6 +387,8 @@ const UserManagement = () => {
               <button
                 onClick={() => setShowEditModal(false)}
                 className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                aria-label="Close edit user modal"
+                title="Close"
               >
                 <XMarkIcon className="w-5 h-5 text-white" />
               </button>
@@ -399,6 +404,7 @@ const UserManagement = () => {
                   value={formData.username}
                   disabled
                   className="w-full px-3 py-2 bg-white/5 border border-white/20 rounded-lg text-white/50 cursor-not-allowed"
+                  placeholder="Username"
                 />
                 <p className="text-white/40 text-xs mt-1">Username cannot be changed</p>
               </div>
@@ -412,6 +418,7 @@ const UserManagement = () => {
                   value={formData.email}
                   onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                   className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter email"
                 />
               </div>
 
@@ -446,6 +453,7 @@ const UserManagement = () => {
                   onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
                   disabled={selectedUser.id === currentUser?.id}
                   className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  aria-label="Select role"
                 >
                   <option value="viewer">Viewer</option>
                   <option value="analyst">Analyst</option>
@@ -485,6 +493,8 @@ const UserManagement = () => {
               <button
                 onClick={() => setShowDeleteModal(false)}
                 className="p-2 hover:bg-white/10 rounded-lg transition-colors"
+                aria-label="Close delete user modal"
+                title="Close"
               >
                 <XMarkIcon className="w-5 h-5 text-white" />
               </button>

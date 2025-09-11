@@ -65,13 +65,7 @@ const AdminPage = () => {
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['admin', 'ingest-runs'] })
       queryClient.invalidateQueries({ queryKey: ['admin', 'stats'] })
-      toast.success('URLHaus ingestion started successfully')
-      // Show ingestion stats if available
-      if (data?.data?.stats) {
-        setTimeout(() => {
-          toast.success(`Ingested ${data.data.stats.new_count} new IOCs, updated ${data.data.stats.updated_count} existing`)
-        }, 2000)
-      }
+      toast.success(data?.data?.message || 'URLHaus ingestion completed')
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || 'Failed to trigger ingestion')
@@ -163,7 +157,7 @@ const AdminPage = () => {
               <div>
                 <p className="text-white/60 text-sm">Database Size</p>
                 <p className="text-lg font-bold text-white">
-                  {formatBytes(systemStats?.database_stats?.dataSize || 0)}
+                  {formatBytes((systemStats?.database?.total_size_mb ? systemStats.database.total_size_mb * 1024 * 1024 : 0))}
                 </p>
               </div>
             </div>
@@ -175,7 +169,7 @@ const AdminPage = () => {
               <div>
                 <p className="text-white/60 text-sm">Total IOCs</p>
                 <p className="text-lg font-bold text-white">
-                  {systemStats?.collection_counts?.indicators || 0}
+                  {systemStats?.database?.collections?.indicators || 0}
                 </p>
               </div>
             </div>
@@ -187,7 +181,7 @@ const AdminPage = () => {
               <div>
                 <p className="text-white/60 text-sm">Active Users</p>
                 <p className="text-lg font-bold text-white">
-                  {users?.length || 0}
+                  {(users?.total_users ?? users?.users?.length) || 0}
                 </p>
               </div>
             </div>
@@ -199,7 +193,7 @@ const AdminPage = () => {
               <div>
                 <p className="text-white/60 text-sm">Recent Activity</p>
                 <p className="text-lg font-bold text-white">
-                  {systemStats?.recent_activity?.lookups || 0}
+                  {systemStats?.recent_activity?.last_24h?.lookups || 0}
                 </p>
                 <p className="text-xs text-white/40">lookups (24h)</p>
               </div>
@@ -301,8 +295,8 @@ const AdminPage = () => {
 
               <div className="border-t border-white/10 pt-3 mt-4">
                 <div className="text-white/60 text-xs">
-                  Last ingestion: {ingestRuns?.[0]?.started_at 
-                    ? new Date(ingestRuns[0].started_at).toLocaleString()
+                  Last ingestion: {Array.isArray(ingestRuns?.runs) && ingestRuns.runs[0]?.started_at 
+                    ? new Date(ingestRuns.runs[0].started_at).toLocaleString()
                     : 'Never'
                   }
                 </div>
@@ -350,8 +344,8 @@ const AdminPage = () => {
           </div>
         ) : (
           <div className="space-y-4">
-            {ingestRuns?.length > 0 ? (
-              ingestRuns.map((run: any) => (
+            {Array.isArray(ingestRuns?.runs) && ingestRuns.runs.length > 0 ? (
+              ingestRuns.runs.map((run: any) => (
                 <div key={run.id} className="bg-white/5 rounded-xl p-4 border border-white/10">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center space-x-3">
